@@ -175,6 +175,9 @@ void Game::Init()
 #pragma endregion
 
 	shadowMap.MakeProjection(light3.Direction);
+
+	audioManager = std::make_shared<AudioManager>();
+
 }
 
 // --------------------------------------------------------
@@ -285,6 +288,11 @@ void Game::Update(float deltaTime, float totalTime)
 	// Example input checking: Quit if the escape key is pressed
 	if (InputManager::KeyDown(VK_ESCAPE))
 		Quit();
+
+	if (InputManager::KeyDown(VK_END))
+	{
+		audioManager->playSound("Sounds/vine-boom.wav");
+	}
 
 	cameras[selectedCamera].get()->Update(deltaTime);
 	ImGuiUpdate(deltaTime, totalTime);

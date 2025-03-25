@@ -13,6 +13,7 @@
 #include "Sky.h"
 #include "ShadowMap.h"
 #include "PostProcess.h"
+#include "AudioManager.h"
 
 #include <memory>
 #include <vector>
@@ -79,6 +80,9 @@ public:
 
 	float mouseX;
 	float mouseY;
+
+	// Audio
+	std::shared_ptr<AudioManager> audioManager;
 
 private:
 

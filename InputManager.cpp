@@ -83,6 +83,7 @@ void InputManager::ShutDown()
 {
 	delete[] kbState;
 	delete[] prevKbState;
+	delete XInputManager::Instance;
 }
 
 // ----------------------------------------------------------
