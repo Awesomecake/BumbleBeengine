@@ -50,53 +50,51 @@ void Camera::UpdateViewMatrix()
 
 void Camera::Update(float dt)
 {
-	Input& input = Input::GetInstance();
-
-	if (input.KeyDown('W'))
+	if (InputManager::KeyDown('W'))
 	{
 		transform.MoveRelative(0, 0, moveSpeed * dt);
 		isDirty = true;
 	}
 
-	if (input.KeyDown('S'))
+	if (InputManager::KeyDown('S'))
 	{
 		transform.MoveRelative(0, 0, -moveSpeed * dt);
 		isDirty = true;
 	}
 
-	if (input.KeyDown('A'))
+	if (InputManager::KeyDown('A'))
 	{
 		transform.MoveRelative(-moveSpeed * dt, 0, 0);
 		isDirty = true;
 	}
 
-	if (input.KeyDown('D'))
+	if (InputManager::KeyDown('D'))
 	{
 		transform.MoveRelative(moveSpeed * dt, 0, 0);
 		isDirty = true;
 	}
 
-	if (input.KeyDown(VK_SPACE))
+	if (InputManager::KeyDown(VK_SPACE))
 	{
 		transform.MoveAbsolute(0, moveSpeed * dt, 0);
 		isDirty = true;
 	}
 
-	if (input.KeyDown('X'))
+	if (InputManager::KeyDown('X'))
 	{
 		transform.MoveAbsolute(0, -moveSpeed * dt, 0);
 		isDirty = true;
 	}
 
-	if (input.MouseLeftDown()) {
+	if (InputManager::MouseLeftDown()) {
 		isDirty = true;
 
-		transform.Rotate(0, input.GetMouseXDelta() * mouseSensitivity, 0);
+		transform.Rotate(0, InputManager::GetMouseXDelta() * mouseSensitivity, 0);
 		// Clamp the pitch rotation
-		transform.Rotate(input.GetMouseYDelta() * mouseSensitivity, 0, 0);
+		transform.Rotate(InputManager::GetMouseYDelta() * mouseSensitivity, 0, 0);
 
 		if (transform.GetPitchYawRoll().x > XM_PIDIV2 || transform.GetPitchYawRoll().x < -XM_PIDIV2)
-			transform.Rotate(-input.GetMouseYDelta() * mouseSensitivity, 0, 0);
+			transform.Rotate(-InputManager::GetMouseYDelta() * mouseSensitivity, 0, 0);
 	}
 
 	if(isDirty)

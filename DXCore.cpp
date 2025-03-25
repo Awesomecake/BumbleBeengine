@@ -1,5 +1,5 @@
 #include "DXCore.h"
-#include "Input.h"
+#include "InputManager.h"
 
 #include <dxgi1_5.h>
 #include <WindowsX.h>
@@ -81,7 +81,7 @@ DXCore::~DXCore()
 	//   Release() on each Direct3D object created in DXCore
 
 	// Delete input manager singleton
-	delete& Input::GetInstance();
+	InputManager::ShutDown();
 }
 
 // --------------------------------------------------------
@@ -157,8 +157,8 @@ HRESULT DXCore::InitWindow()
 	// We need to tell Windows to show it, and how to show it
 	ShowWindow(hWnd, SW_SHOW);
 
-	// Initialize the input manager now that we definitely have a window
-	Input::GetInstance().Initialize(hWnd);
+	// Initalize the input system, which requires the window handle
+	InputManager::Initialize(hWnd);
 
 	// Return an "everything is ok" HRESULT value
 	return S_OK;
@@ -432,14 +432,14 @@ HRESULT DXCore::Run()
 				UpdateTitleBarStats();
 
 			// Update the input manager
-			Input::GetInstance().Update();
+			InputManager::Update();
 
 			// The game loop
 			Update(deltaTime, totalTime);
 			Draw(deltaTime, totalTime);
 
 			// Frame is over, notify the input manager
-			Input::GetInstance().EndOfFrame();
+			InputManager::EndOfFrame();
 		}
 	}
 
@@ -627,12 +627,12 @@ LRESULT DXCore::ProcessMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 	// Has the mouse wheel been scrolled?
 	case WM_MOUSEWHEEL:
-		Input::GetInstance().SetWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA);
+		InputManager::SetWheelDelta(GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA);
 		return 0;
 
 	// Raw mouse input
 	case WM_INPUT:
-		Input::GetInstance().ProcessRawMouseInput(lParam);
+		InputManager::ProcessRawMouseInput(lParam);
 		break;
 	
 	// Is our focus state changing?

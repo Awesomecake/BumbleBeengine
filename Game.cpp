@@ -1,6 +1,6 @@
 #include "Game.h"
 #include "Vertex.h"
-#include "Input.h"
+#include "InputManager.h"
 #include "PathHelpers.h"
 #include "Mesh.h"
 #include <string>
@@ -283,15 +283,15 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	// Example input checking: Quit if the escape key is pressed
-	if (Input::GetInstance().KeyDown(VK_ESCAPE))
+	if (InputManager::KeyDown(VK_ESCAPE))
 		Quit();
 
 	cameras[selectedCamera].get()->Update(deltaTime);
 	ImGuiUpdate(deltaTime, totalTime);
 	BuildUI(deltaTime, totalTime);
 
-	mouseX = (Input::GetInstance().GetMouseX()/(float) windowWidth);
-	mouseY = (Input::GetInstance().GetMouseY() / (float)windowHeight);
+	mouseX = (InputManager::GetMouseX()/(float) windowWidth);
+	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 
 	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
 }
@@ -381,10 +381,9 @@ void Game::ImGuiUpdate(float deltaTime, float totalTime)
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-	// Determine new input capture
-	Input& input = Input::GetInstance();
-	input.SetKeyboardCapture(io.WantCaptureKeyboard);
-	input.SetMouseCapture(io.WantCaptureMouse);
+	//Determine the new input capture state which is what the user is currently doing
+	InputManager::SetKeyboardCapture(io.WantCaptureKeyboard); // make sure no ! flag on this..
+	InputManager::SetMouseCapture(io.WantCaptureMouse);
 	// Show the demo window
 
 	if(showImGuiDemoWindow)
