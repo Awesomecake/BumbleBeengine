@@ -4,6 +4,21 @@ GameEntity::GameEntity(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> 
 {
 	mesh = refMesh;
 	material = _material;
+	usingPhysicsBody = false;
+}
+
+GameEntity::GameEntity(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material, JPH::BodyID physBody) : mesh(refMesh), material(_material), physicsBody(physBody)
+{
+	usingPhysicsBody = true;
+}
+
+void GameEntity::UpdateTransformFromPhysicsBody(PhysicsManager* physicsManager)
+{
+	RVec3 position = physicsManager->body_interface->GetCenterOfMassPosition(physicsBody);
+	Vec3 rotation = physicsManager->body_interface->GetRotation(physicsBody).GetEulerAngles();
+
+	transform.SetPosition(position.GetX(), position.GetY(), position.GetZ());
+	transform.SetRotation(rotation.GetX(), rotation.GetY(), rotation.GetZ());
 }
 
 GameEntity::~GameEntity()
@@ -25,6 +40,9 @@ std::shared_ptr<Material> GameEntity::GetMaterial()
 {
 	return material;
 }
+
+JPH::BodyID GameEntity::GetPhysicsBody() { return physicsBody; }
+bool GameEntity::GetIsUsingPhysics() { return usingPhysicsBody; }
 
 void GameEntity::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera)
 {

@@ -15,6 +15,9 @@
 #include "PostProcess.h"
 #include "AudioManager.h"
 
+#include "PhysicsManager.h"
+
+
 #include <memory>
 #include <vector>
 
@@ -101,6 +104,20 @@ private:
 	std::shared_ptr<SimpleVertexShader> shadowMapVertexShader;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
+
+	//--------------JoltPhysics----------------
+	PhysicsManager* physicsManager;
+	BodyID sphere1;
+	BodyID sphere2;
+
+	uint step = 0;
+
+	// We simulate the physics world in discrete time steps. 60 Hz is a good rate to update the physics system.
+	const float cDeltaTime = 1.0f / 60.0f;
+	float timeSincePhysicsStep = 0.f;
+	bool runPhysics = false;
+
+	unordered_map<BodyID, GameEntity> bodyObjects;
 
 };
 

@@ -61,6 +61,13 @@ Game::~Game()
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+
+	physicsManager->DeInitPhysics();
+}
+
+// Function to be called by the delegate
+void CollisionCallback(AudioManager* audioManager) {
+	audioManager->playSound("Sounds/vine-boom.wav");
 }
 
 // --------------------------------------------------------
@@ -133,6 +140,16 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(-0.5, 0, -5)));
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 45.f, XMFLOAT3(0, 0.5, -5)));
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
+
+	physicsManager = new PhysicsManager();
+	sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1);
+	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
+	sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1);
+
+	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
+
+	gameEntities.push_back(GameEntity(sphere, materials[0], sphere1));
+	gameEntities.push_back(GameEntity(sphere, materials[0], sphere2));
 
 #pragma region Constructing Lights
 	lights = std::vector<Light>();
@@ -289,7 +306,7 @@ void Game::Update(float deltaTime, float totalTime)
 	if (InputManager::KeyDown(VK_ESCAPE))
 		Quit();
 
-	if (InputManager::KeyDown(VK_END))
+	if (InputManager::KeyPress(VK_END))
 	{
 		audioManager->playSound("Sounds/vine-boom.wav");
 	}
@@ -302,6 +319,57 @@ void Game::Update(float deltaTime, float totalTime)
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 
 	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
+
+	if (InputManager::KeyPress(VK_DELETE))
+	{
+		int matLocation = rand() % materials.size();
+
+		BodyID id = physicsManager->CreatePhysicsCubeBody(Vec3(0.0f, 10.0f, 0.0f), Vec3(1, 1, 1));
+		GameEntity entity = GameEntity(cube, materials[matLocation], id);
+		gameEntities.push_back(entity);
+		bodyObjects[id] = entity;
+	}
+
+	if (InputManager::KeyPress(VK_INSERT))
+	{
+		XMFLOAT3 pos = cameras[0]->GetTransform().GetPosition();
+		XMFLOAT3 forward = cameras[0]->GetTransform().GetForward();
+
+		AllHitCollisionCollector<RayCastBodyCollector> collector = physicsManager->JoltRayCast(Vec3(pos.x, pos.y, pos.z), Vec3Arg(forward.x, forward.y, forward.z), 100);
+
+		bool hasHit = collector.HadHit();
+
+		if (hasHit)
+		{
+			for (auto& hitBody : collector.mHits)
+			{
+				if (bodyObjects.contains(hitBody.mBodyID))
+				{
+					bodyObjects[hitBody.mBodyID].SetMaterial(materials[1]);
+				}
+			}
+		}
+	}
+
+	timeSincePhysicsStep += deltaTime;
+
+	while (timeSincePhysicsStep >= cDeltaTime && runPhysics)
+	{
+		physicsManager->JoltPhysicsFrame();
+		timeSincePhysicsStep -= cDeltaTime;
+
+		// Next step
+		++step;
+
+		for (auto& entity : gameEntities)
+		{
+			if (entity.GetIsUsingPhysics())
+			{
+				entity.UpdateTransformFromPhysicsBody(physicsManager);
+			}
+		}
+	}
+	audioManager->update_audio(deltaTime);
 }
 
 // --------------------------------------------------------
@@ -553,6 +621,12 @@ void Game::BuildUI(float deltaTime, float totalTime)
 		ImGui::DragFloat("Pixel Intensity", &pixelIntensity, 0.1f, 0, 10, "%.01f");
 
 		ImGui::TreePop();
+	}
+
+	if (ImGui::Button("Run Physics"))
+	{
+		runPhysics = true;
+		timeSincePhysicsStep = 0.f;
 	}
 
 	ImGui::End(); // Ends the current window
