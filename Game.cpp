@@ -326,8 +326,13 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		int matLocation = rand() % materials.size();
 
-		BodyID id = physicsManager->CreatePhysicsCubeBody(Vec3(0.0f, 10.0f, 0.0f), Vec3(1, 1, 1));
-		GameEntity entity = GameEntity(cube, materials[matLocation], id);
+		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
+		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
+
+		BodyID id = physicsManager->CreatePhysicsCubeBody(Vec3(camPos.x, camPos.y, camPos.z), Vec3(1, 1, 1));
+		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+		GameEntity entity = GameEntity(sphere, materials[matLocation], id);
+		entity.GetTransform().SetPosition(camPos);
 		gameEntities.push_back(entity);
 		bodyObjects[id] = entity;
 	}
