@@ -80,6 +80,7 @@ PhysicsManager::~PhysicsManager()
 	delete body_interface;
 	delete temp_allocator;
 	delete job_system;
+	delete Factory::sInstance;
 }
 
 void PhysicsManager::DeInitPhysics()

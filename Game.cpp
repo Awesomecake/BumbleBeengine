@@ -315,7 +315,7 @@ void Game::Update(float deltaTime, float totalTime)
 	ImGuiUpdate(deltaTime, totalTime);
 	BuildUI(deltaTime, totalTime);
 
-	mouseX = (InputManager::GetMouseX()/(float) windowWidth);
+	mouseX = (InputManager::GetMouseX() / (float) windowWidth);
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 
 	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
@@ -329,9 +329,10 @@ void Game::Update(float deltaTime, float totalTime)
 		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
 		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-		BodyID id = physicsManager->CreatePhysicsCubeBody(Vec3(camPos.x, camPos.y, camPos.z), Vec3(1, 1, 1));
+		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
 		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
 		GameEntity entity = GameEntity(sphere, materials[matLocation], id);
+		entity.GetTransform().SetScale(0.5, 0.5, 0.5);
 		entity.GetTransform().SetPosition(camPos);
 		gameEntities.push_back(entity);
 		bodyObjects[id] = entity;
