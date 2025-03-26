@@ -15,10 +15,10 @@ GameEntity::GameEntity(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> 
 void GameEntity::UpdateTransformFromPhysicsBody(PhysicsManager* physicsManager)
 {
 	RVec3 position = physicsManager->body_interface->GetCenterOfMassPosition(physicsBody);
-	Vec3 rotation = physicsManager->body_interface->GetRotation(physicsBody).GetEulerAngles();
+	JPH::Quat rotation = physicsManager->body_interface->GetRotation(physicsBody);
 
 	transform.SetPosition(position.GetX(), position.GetY(), position.GetZ());
-	transform.SetRotation(rotation.GetX(), rotation.GetY(), rotation.GetZ());
+	transform.SetQuaternion(rotation.GetX(),rotation.GetY(),rotation.GetZ(),rotation.GetW());
 }
 
 GameEntity::~GameEntity()

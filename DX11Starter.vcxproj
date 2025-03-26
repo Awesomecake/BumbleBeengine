@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -312,6 +312,7 @@
     <ClCompile Include="SimpleShader.cpp" />
     <ClCompile Include="Sky.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="TransformEuler.cpp" />
     <ClCompile Include="XInputManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -632,6 +633,7 @@
     <ClInclude Include="SimpleShader.h" />
     <ClInclude Include="Sky.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="TransformEuler.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="XInputManager.h" />
   </ItemGroup>

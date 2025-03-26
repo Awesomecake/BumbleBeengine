@@ -1,15 +1,16 @@
 #include "Transform.h"
 
-Transform::Transform() : position(0,0,0), rotation(0,0,0), scale(1,1,1)
+Transform::Transform() : position(0, 0, 0), scale(1, 1, 1)
 {
 	DirectX::XMStoreFloat4x4(&worldMatrix, DirectX::XMMatrixIdentity());
 	DirectX::XMStoreFloat4x4(&worldInverseTransposeMatrix, DirectX::XMMatrixIdentity());
+	XMStoreFloat4(&quaternion, DirectX::XMQuaternionIdentity());
 
 	isDirty = false;
 }
 
-Transform::Transform(DirectX::XMFLOAT3 pos) : Transform() 
-{ 
+Transform::Transform(DirectX::XMFLOAT3 pos) : Transform()
+{
 	position = pos;
 }
 
@@ -32,14 +33,20 @@ void Transform::SetPosition(DirectX::XMFLOAT3 newPosition)
 
 void Transform::SetRotation(float pitch, float yaw, float roll)
 {
-	rotation = DirectX::XMFLOAT3(pitch, yaw, roll);
+	XMStoreFloat4(&quaternion, DirectX::XMQuaternionRotationRollPitchYaw(pitch, yaw, roll));
+
 	isDirty = true;
 }
 
-void Transform::SetRotation(DirectX::XMFLOAT3 newRotation) // XMFLOAT4 for quaternion
+void Transform::SetRotation(DirectX::XMFLOAT3 newRotation)
 {
-	rotation = newRotation;
+	XMStoreFloat4(&quaternion, DirectX::XMQuaternionRotationRollPitchYaw(newRotation.x, newRotation.y, newRotation.z));
 	isDirty = true;
+}
+
+void Transform::SetQuaternion(float x, float y, float z, float w)
+{
+	quaternion = DirectX::XMFLOAT4(x, y, z, w);
 }
 
 void Transform::SetScale(float x, float y, float z)
@@ -59,10 +66,11 @@ DirectX::XMFLOAT3 Transform::GetPosition()
 	return position;
 }
 
-DirectX::XMFLOAT3 Transform::GetPitchYawRoll() // XMFLOAT4 GetRotation() for quaternion
+DirectX::XMFLOAT4 Transform::GetRotation()
 {
-	return rotation;
+	return quaternion;
 }
+
 
 DirectX::XMFLOAT3 Transform::GetScale()
 {
@@ -73,7 +81,8 @@ DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 {
 	if (isDirty)
 	{
-		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationQuaternion(quat) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		XMStoreFloat4x4(&worldMatrix, world);
 		XMStoreFloat4x4(&worldInverseTransposeMatrix, XMMatrixInverse(0, XMMatrixTranspose(world)));
 		isDirty = false;
@@ -86,7 +95,8 @@ DirectX::XMFLOAT4X4 Transform::GetWorldInverseTransposeMatrix()
 {
 	if (isDirty)
 	{
-		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+		DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * DirectX::XMMatrixRotationQuaternion(quat) * DirectX::XMMatrixTranslation(position.x, position.y, position.z);
 		XMStoreFloat4x4(&worldMatrix, world);
 		XMStoreFloat4x4(&worldInverseTransposeMatrix, XMMatrixInverse(0, XMMatrixTranspose(world)));
 		isDirty = false;
@@ -98,8 +108,9 @@ DirectX::XMFLOAT4X4 Transform::GetWorldInverseTransposeMatrix()
 DirectX::XMFLOAT3 Transform::GetRight()
 {
 	DirectX::XMVECTOR rightVector = DirectX::XMVectorSet(1, 0, 0, 0);
-	rightVector = DirectX::XMVector3Rotate(rightVector, DirectX::XMQuaternionRotationRollPitchYaw(rotation.x, rotation.y, rotation.z));
-	
+	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+	rightVector = DirectX::XMVector3Rotate(rightVector, quat);
+
 	DirectX::XMFLOAT3 newRightVec = DirectX::XMFLOAT3();
 	DirectX::XMStoreFloat3(&newRightVec, rightVector);
 	return newRightVec;
@@ -108,7 +119,8 @@ DirectX::XMFLOAT3 Transform::GetRight()
 DirectX::XMFLOAT3 Transform::GetUp()
 {
 	DirectX::XMVECTOR upVector = DirectX::XMVectorSet(0, 1, 0, 0);
-	upVector = DirectX::XMVector3Rotate(upVector, DirectX::XMQuaternionRotationRollPitchYaw(rotation.x, rotation.y, rotation.z));
+	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+	upVector = DirectX::XMVector3Rotate(upVector, quat);
 
 	DirectX::XMFLOAT3 newUpVec = DirectX::XMFLOAT3();
 	DirectX::XMStoreFloat3(&newUpVec, upVector);
@@ -118,7 +130,8 @@ DirectX::XMFLOAT3 Transform::GetUp()
 DirectX::XMFLOAT3 Transform::GetForward()
 {
 	DirectX::XMVECTOR forwardVector = DirectX::XMVectorSet(0, 0, 1, 0);
-	forwardVector = DirectX::XMVector3Rotate(forwardVector, DirectX::XMQuaternionRotationRollPitchYaw(rotation.x, rotation.y, rotation.z));
+	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+	forwardVector = DirectX::XMVector3Rotate(forwardVector, quat);
 
 	DirectX::XMFLOAT3 newForwardVec = DirectX::XMFLOAT3();
 	DirectX::XMStoreFloat3(&newForwardVec, forwardVector);
@@ -143,32 +156,30 @@ void Transform::MoveAbsolute(DirectX::XMFLOAT3 offset)
 	isDirty = true;
 }
 
-void Transform::MoveRelative(float x, float y, float z)
-{
-	DirectX::XMVECTOR moveOffset = DirectX::XMVectorSet(x, y, z, 0.0f);
-	DirectX::XMVECTOR quat = DirectX::XMQuaternionRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
-
-	moveOffset = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&position), DirectX::XMVector3Rotate(moveOffset, quat));
-
-	DirectX::XMStoreFloat3(&position, moveOffset);
-
-	isDirty = true;
-}
+//void Transform::MoveRelative(float x, float y, float z)
+//{
+//	DirectX::XMVECTOR moveOffset = DirectX::XMVectorSet(x, y, z, 0.0f);
+//	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+//
+//	moveOffset = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&position), DirectX::XMVector3Rotate(moveOffset, quat));
+//
+//	DirectX::XMStoreFloat3(&position, moveOffset);
+//
+//	isDirty = true;
+//}
 
 void Transform::Rotate(float pitch, float yaw, float roll)
 {
-	rotation.x += pitch;
-	rotation.y += yaw;
-	rotation.z += roll;
+	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+	XMStoreFloat4(&quaternion, DirectX::XMQuaternionMultiply(quat, DirectX::XMQuaternionRotationRollPitchYaw(pitch, yaw, roll)));
 
 	isDirty = true;
 }
 
 void Transform::Rotate(DirectX::XMFLOAT3 rotationOffset)
 {
-	rotation.x += rotationOffset.x;
-	rotation.y += rotationOffset.y;
-	rotation.z += rotationOffset.z;
+	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+	XMStoreFloat4(&quaternion, DirectX::XMQuaternionMultiply(quat, DirectX::XMQuaternionRotationRollPitchYaw(rotationOffset.x, rotationOffset.y, rotationOffset.z)));
 
 	isDirty = true;
 }

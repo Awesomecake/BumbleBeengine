@@ -1,12 +1,12 @@
 #pragma once
 #include "InputManager.h"
-#include "Transform.h"
+#include "TransformEuler.h"
 #include <DirectXMath.h>
 
 class Camera
 {
 private:
-	Transform transform;
+	TransformEuler transform;
 	DirectX::XMFLOAT4X4 viewMatrix;
 	DirectX::XMFLOAT4X4 projMatrix;
 
@@ -22,7 +22,7 @@ public:
 
 	DirectX::XMFLOAT4X4 GetViewMatrix();
 	DirectX::XMFLOAT4X4 GetProjectionMatrix();
-	Transform GetTransform();
+	TransformEuler GetTransform();
 	float GetFOV();
 
 	void UpdateProjectionMatrix(float aspectRatio);

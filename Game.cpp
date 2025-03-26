@@ -319,6 +319,8 @@ void Game::Update(float deltaTime, float totalTime)
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 
 	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
+	gameEntities[2].GetTransform().Rotate(deltaTime, 0, deltaTime);
+
 
 	if (InputManager::KeyPress(VK_DELETE))
 	{
@@ -516,9 +518,9 @@ void Game::BuildUI(float deltaTime, float totalTime)
 				ImGui::DragFloat3("Position", &position.x, 0.005f, -5.0f, 5.0f, "%.3f");
 				gameEntities[i].GetTransform().SetPosition(position);
 
-				XMFLOAT3 rotation = gameEntities[i].GetTransform().GetPitchYawRoll();
-				ImGui::DragFloat3("Rotation (Radians)", &rotation.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				gameEntities[i].GetTransform().SetRotation(rotation);
+				//XMFLOAT3 rotation = gameEntities[i].GetTransform().GetPitchYawRoll();
+				//ImGui::DragFloat3("Rotation (Radians)", &rotation.x, 0.005f, -5.0f, 5.0f, "%.3f");
+				//gameEntities[i].GetTransform().SetRotation(rotation);
 
 				XMFLOAT3 scale = gameEntities[i].GetTransform().GetScale();
 				ImGui::DragFloat3("Scale", &scale.x, 0.005f, -5.0f, 5.0f, "%.3f");
