@@ -1,0 +1,8 @@
+prefix=C:/Program Files (x86)/EnTT
+includedir=${prefix}/include
+
+Name: EnTT
+Description: Gaming meets modern C++
+Url: https://github.com/skypjack/entt
+Version: 3.15.0
+Cflags: -I${includedir}
