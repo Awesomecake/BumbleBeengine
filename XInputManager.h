@@ -6,7 +6,7 @@
 #include <DirectXMath.h>
 using namespace DirectX;
 
-#define NOT_A_CONTROLLER -1
+#define NOT_A_CONTROLLER 65535
 #define CONTROLLER_1 0
 #define CONTROLLER_2 1
 #define CONTROLLER_3 2

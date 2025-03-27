@@ -228,55 +228,77 @@ void Game::InitializeInputActions()
 	InputActionManager::AssignBindingToAction(L"Look", InputActionManager::InputBindings::XControllerRightStick);
 
 	InputActionManager::GetAction(L"Look").OnTrigger.push_back([&](InputActionManager::InputData data)
+	{
+		if (data.inputType == InputActionManager::InputType::Value && data.controllerIndex == CONTROLLER_1)
 		{
-			if (data.inputType == InputActionManager::InputType::Value && data.controllerIndex == CONTROLLER_1)
+			std::optional<XMFLOAT2> vector = data.value.GetValue<XMFLOAT2>();
+			float x = vector.value().x;
+			float y = vector.value().y;
+
+			if (vector.value().x < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && vector.value().x > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) { x = 0; }
+			if (vector.value().y < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && vector.value().y > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) { y = 0; }
+
+			if (x != 0 || y != 0)
 			{
-				std::optional<XMFLOAT2> vector = data.value.GetValue<XMFLOAT2>();
-				float x = vector.value().x;
-				float y = vector.value().y;
+				cameras[selectedCamera]->isDirty = true;
 
-				if (vector.value().x < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && vector.value().x > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) { x = 0; }
-				if (vector.value().y < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && vector.value().y > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) { y = 0; }
+				cameras[selectedCamera]->GetTransform().Rotate(0, x / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0);
+				cameras[selectedCamera]->GetTransform().Rotate(-y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
 
-				if (x != 0 || y != 0)
-				{
-					cameras[selectedCamera]->isDirty = true;
-
-					cameras[selectedCamera]->GetTransform().Rotate(0, x / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0);
-					// Clamp the pitch rotation
-					cameras[selectedCamera]->GetTransform().Rotate(-y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
-
-					if (cameras[selectedCamera]->GetTransform().GetPitchYawRoll().x > XM_PIDIV2 || cameras[selectedCamera]->GetTransform().GetPitchYawRoll().x < -XM_PIDIV2)
-						cameras[selectedCamera]->GetTransform().Rotate(y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
-				}
-				
+				if (cameras[selectedCamera]->GetTransform().GetPitchYawRoll().x > XM_PIDIV2 || cameras[selectedCamera]->GetTransform().GetPitchYawRoll().x < -XM_PIDIV2)
+					cameras[selectedCamera]->GetTransform().Rotate(y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
 			}
-		});
+			
+		}
+	});
 
 	InputActionManager::CreateAction(L"Move");
 	InputActionManager::AssignBindingToAction(L"Move", InputActionManager::InputBindings::XControllerLeftStick);
 
 	InputActionManager::GetAction(L"Move").OnTrigger.push_back([&](InputActionManager::InputData data)
+	{
+		if (data.inputType == InputActionManager::InputType::Value && data.controllerIndex == CONTROLLER_1)
 		{
-			if (data.inputType == InputActionManager::InputType::Value && data.controllerIndex == CONTROLLER_1)
+			std::optional<XMFLOAT2> vector = data.value.GetValue<XMFLOAT2>();
+			float x = vector.value().x;
+			float y = vector.value().y;
+
+			if (vector.value().x < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && vector.value().x > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) { x = 0; }
+			if (vector.value().y < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && vector.value().y > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) { y = 0; }
+
+			if (x != 0 || y != 0)
 			{
-				std::optional<XMFLOAT2> vector = data.value.GetValue<XMFLOAT2>();
-				float x = vector.value().x;
-				float y = vector.value().y;
-
-				if (vector.value().x < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && vector.value().x > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) { x = 0; }
-				if (vector.value().y < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && vector.value().y > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) { y = 0; }
-
-				if (x != 0 || y != 0)
-				{
-					cameras[selectedCamera]->isDirty = true;
-
-					cameras[selectedCamera]->GetTransform().MoveRelative(cameras[selectedCamera]->moveSpeed * x / 32768.0f * deltaTime, 
-																		0, 
-																		cameras[selectedCamera]->moveSpeed * y / 32768.0f * deltaTime);
-				}
+				cameras[selectedCamera]->isDirty = true;
+				cameras[selectedCamera]->GetTransform().MoveRelative(cameras[selectedCamera]->moveSpeed * x / 32768.0f * deltaTime, 0, cameras[selectedCamera]->moveSpeed * y / 32768.0f * deltaTime);
 			}
-		});
+		}
+	});
+
+	InputActionManager::CreateAction(L"Shoot");
+	InputActionManager::AssignBindingToAction(L"Shoot", InputActionManager::InputBindings::MouseRightButton);
+	InputActionManager::AssignBindingToAction(L"Shoot", InputActionManager::InputBindings::XControllerA);
+
+	InputActionManager::GetAction(L"Shoot").OnTrigger.push_back([&](InputActionManager::InputData data)
+	{
+		if (data.inputType == InputActionManager::InputType::Pressed && (data.controllerIndex == CONTROLLER_1 || data.controllerIndex == NOT_A_CONTROLLER) )
+		{
+			int matLocation = rand() % materials.size();
+
+			XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
+			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
+
+			BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
+			GameEntity entity = GameEntity(sphere, materials[matLocation], id);
+
+			entity.GetTransform().SetScale(0.5, 0.5, 0.5);
+			entity.GetTransform().SetPosition(camPos);
+
+			gameEntities.push_back(entity);
+			bodyObjects[id] = entity;
+
+			physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+		}
+	});
 
 }
 
@@ -382,22 +404,6 @@ void Game::Update(float _deltaTime, float totalTime)
 
 	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
 	//gameEntities[2].GetTransform().Rotate(deltaTime, 0, deltaTime);
-
-	if (InputManager::KeyPress(VK_DELETE))
-	{
-		int matLocation = rand() % materials.size();
-
-		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
-		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
-
-		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
-		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
-		GameEntity entity = GameEntity(sphere, materials[matLocation], id);
-		entity.GetTransform().SetScale(0.5, 0.5, 0.5);
-		entity.GetTransform().SetPosition(camPos);
-		gameEntities.push_back(entity);
-		bodyObjects[id] = entity;
-	}
 
 	if (InputManager::KeyPress(VK_INSERT))
 	{
