@@ -442,10 +442,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	RenderScene();
 
 	ppVS->SetShader();
-	//postProcess1.RenderPostProcess(context, postProcess2.ppRTV, depthBufferDSV);
-	//postProcess2.RenderPostProcess(context, postProcess3.ppRTV, depthBufferDSV);
-	//postProcess3.RenderPostProcess(context, postProcess4.ppRTV, depthBufferDSV);
-	postProcess1.RenderPostProcess(context, backBufferRTV, 0);
+	postProcess1.RenderPostProcess(context, postProcess2.ppRTV, depthBufferDSV);
+	postProcess2.RenderPostProcess(context, postProcess3.ppRTV, depthBufferDSV);
+	postProcess3.RenderPostProcess(context, backBufferRTV, 0);
+	//postProcess4.RenderPostProcess(context, backBufferRTV, 0);
 
 	ImGui::Render(); // Turns this frame’s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
