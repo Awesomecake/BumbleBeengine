@@ -5,7 +5,6 @@
 #include "Mesh.h"
 #include <string>
 #include "WICTextureLoader.h"
-#include "EnTT/include/entt/entt.hpp"
 
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx11.h"
@@ -355,6 +354,9 @@ void Game::Update(float deltaTime, float totalTime)
 	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
 	//gameEntities[2].GetTransform().Rotate(deltaTime, 0, deltaTime);
 
+	
+#pragma region Physics System
+
 	if (InputManager::KeyPress(VK_DELETE))
 	{
 		int matLocation = rand() % materials.size();
@@ -391,7 +393,7 @@ void Game::Update(float deltaTime, float totalTime)
 			}
 		}
 	}
-
+	
 	timeSincePhysicsStep += deltaTime;
 
 	while (timeSincePhysicsStep >= cDeltaTime && runPhysics)
@@ -410,7 +412,15 @@ void Game::Update(float deltaTime, float totalTime)
 			}
 		}
 	}
+
+#pragma endregion
+
+#pragma region Audio handling
+
 	audioManager->update_audio(deltaTime);
+
+#pragma endregion
+
 }
 
 // --------------------------------------------------------

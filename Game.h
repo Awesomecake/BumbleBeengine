@@ -18,6 +18,7 @@
 #include "PhysicsManager.h"
 #include "XInputManager.h"
 
+#include "EnTT/include/entt/entt.hpp"
 
 #include <memory>
 #include <vector>
@@ -120,6 +121,8 @@ private:
 	bool runPhysics = false;
 
 	unordered_map<BodyID, GameEntity> bodyObjects;
+
+	entt::registry registry;
 
 };
 
