@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include <string>
 #include "WICTextureLoader.h"
+#include "EnTT/include/entt/entt.hpp"
 
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx11.h"
