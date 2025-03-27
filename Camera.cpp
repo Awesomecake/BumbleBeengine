@@ -23,7 +23,7 @@ XMFLOAT4X4 Camera::GetProjectionMatrix()
 	return projMatrix;
 }
 
-TransformEuler Camera::GetTransform()
+TransformEuler& Camera::GetTransform()
 {
 	return transform;
 }

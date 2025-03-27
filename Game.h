@@ -16,6 +16,7 @@
 #include "AudioManager.h"
 
 #include "PhysicsManager.h"
+#include "XInputManager.h"
 
 
 #include <memory>
@@ -92,6 +93,7 @@ private:
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
 	void LoadShaders(); 
 	void CreateGeometry();
+	void InitializeInputActions();
 	void CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile);
 	
 	std::shared_ptr<SimplePixelShader> pixelShader;

@@ -148,6 +148,12 @@ void PhysicsManager::AddBodyVelocity(BodyID body, Vec3 velocity)
 	body_interface->SetLinearVelocity(body, velocity);
 }
 
+// EActivation::DontActivate
+void PhysicsManager::SetBodyPosition(BodyID body, RVec3 position, JPH::EActivation activationType)
+{
+	body_interface->SetPosition(body, position, activationType);
+}
+
 //Raycasts from a given point in a given direction
 //Returns a list of all physics objects hit by the ray
 AllHitCollisionCollector<RayCastBodyCollector> PhysicsManager::JoltRayCast(Vec3::ArgType origin, Vec3Arg direction, float length)

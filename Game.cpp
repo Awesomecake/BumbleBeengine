@@ -194,6 +194,7 @@ void Game::Init()
 	shadowMap.MakeProjection(light3.Direction);
 
 	audioManager = std::make_shared<AudioManager>();
+	InitializeInputActions();
 
 }
 
@@ -218,6 +219,38 @@ void Game::LoadShaders()
 	ppPS4 = std::make_shared<SimplePixelShader>(device, context, FixPath(L"PostProcessChromaticAberrationPS.cso").c_str());
 
 	ppVS = std::make_shared<SimpleVertexShader>(device, context, FixPath(L"FullScreenTriangle.cso").c_str());
+}
+
+void Game::InitializeInputActions()
+{
+	InputActionManager::CreateAction(L"Look");
+	InputActionManager::AssignBindingToAction(L"Look", InputActionManager::InputBindings::XControllerLeftStick);
+
+	InputActionManager::GetAction(L"Look").OnTrigger.push_back([&](InputActionManager::InputData data)
+		{
+			if (data.inputType == InputActionManager::InputType::Value && data.controllerIndex == CONTROLLER_1)
+			{
+				std::optional<XMFLOAT2> vector = data.value.GetValue<XMFLOAT2>();
+				float x = vector.value().x;
+				float y = vector.value().y;
+
+				if (vector.value().x < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && vector.value().x > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) { x = 0; }
+				if (vector.value().y < XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE && vector.value().y > -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) { y = 0; }
+
+				if (x != 0 || y != 0)
+				{
+					cameras[selectedCamera]->isDirty = true;
+
+					cameras[selectedCamera]->GetTransform().Rotate(0, vector.value().x / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0);
+					// Clamp the pitch rotation
+					cameras[selectedCamera]->GetTransform().Rotate(-vector.value().y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
+
+					if (cameras[selectedCamera]->GetTransform().GetPitchYawRoll().x > XM_PIDIV2 || cameras[selectedCamera]->GetTransform().GetPitchYawRoll().x < -XM_PIDIV2)
+						cameras[selectedCamera]->GetTransform().Rotate(vector.value().y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
+				}
+				
+			}
+		});
 }
 
 void Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile)
@@ -319,8 +352,7 @@ void Game::Update(float deltaTime, float totalTime)
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 
 	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
-	gameEntities[2].GetTransform().Rotate(deltaTime, 0, deltaTime);
-
+	//gameEntities[2].GetTransform().Rotate(deltaTime, 0, deltaTime);
 
 	if (InputManager::KeyPress(VK_DELETE))
 	{

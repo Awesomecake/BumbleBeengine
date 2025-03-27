@@ -15,6 +15,11 @@ using namespace DirectX;
 #define CONTROLLER_CONNECTED 100
 #define CONTROLLER_DISCONNECTED 101
 
+#define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
+#define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
+#define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
+
+
 using InputActionManager::InputType;
 using InputActionManager::InputBindings;
 

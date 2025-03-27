@@ -45,18 +45,6 @@ void InputManager::Initialize(HWND windowHandle)
 
 	InputActionManager::CreateAction(L"Value");
 
-	InputActionManager::AssignBindingToAction(L"Value", InputBindings::MouseDelta);
-
-	InputActionManager::GetAction(L"Value").OnTrigger.push_back([](InputActionManager::InputData data) 
-	{
-		if (data.inputType == InputActionManager::InputType::Value)
-		{
-			std::optional<XMFLOAT2> vector = data.value.GetValue<XMFLOAT2>();
-			if (vector.value().x != 0 || vector.value().y != 0)
-				std::cout << vector.value().x << " " << vector.value().y << std::endl;
-		}
-	});
-
 	InputActionManager::CreateAction(L"ButtonTest");
 
 	InputActionManager::AssignBindingToAction(L"ButtonTest", InputBindings::MouseWheelDown);
