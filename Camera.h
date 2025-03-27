@@ -11,7 +11,6 @@ private:
 	DirectX::XMFLOAT4X4 projMatrix;
 
 	float fov = 45.f;
-	float moveSpeed = 1.f;
 
 public:
 	Camera(float aspect, float _fov, DirectX::XMFLOAT3 position);
@@ -28,4 +27,6 @@ public:
 
 	bool isDirty = false;
 	float mouseSensitivity = 0.0050f;
+	float moveSpeed = 1.f;
+
 };

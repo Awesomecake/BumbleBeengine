@@ -55,6 +55,8 @@ public:
 	std::vector<std::shared_ptr<Camera>> cameras;
 	int selectedCamera = 0;
 
+	float deltaTime = 0.f;
+
 	//Meshes
 	std::shared_ptr<Mesh> cube;
 	std::shared_ptr<Mesh> cylinder;

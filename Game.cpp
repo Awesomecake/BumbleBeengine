@@ -225,7 +225,7 @@ void Game::LoadShaders()
 void Game::InitializeInputActions()
 {
 	InputActionManager::CreateAction(L"Look");
-	InputActionManager::AssignBindingToAction(L"Look", InputActionManager::InputBindings::XControllerLeftStick);
+	InputActionManager::AssignBindingToAction(L"Look", InputActionManager::InputBindings::XControllerRightStick);
 
 	InputActionManager::GetAction(L"Look").OnTrigger.push_back([&](InputActionManager::InputData data)
 		{
@@ -242,16 +242,42 @@ void Game::InitializeInputActions()
 				{
 					cameras[selectedCamera]->isDirty = true;
 
-					cameras[selectedCamera]->GetTransform().Rotate(0, vector.value().x / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0);
+					cameras[selectedCamera]->GetTransform().Rotate(0, x / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0);
 					// Clamp the pitch rotation
-					cameras[selectedCamera]->GetTransform().Rotate(-vector.value().y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
+					cameras[selectedCamera]->GetTransform().Rotate(-y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
 
 					if (cameras[selectedCamera]->GetTransform().GetPitchYawRoll().x > XM_PIDIV2 || cameras[selectedCamera]->GetTransform().GetPitchYawRoll().x < -XM_PIDIV2)
-						cameras[selectedCamera]->GetTransform().Rotate(vector.value().y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
+						cameras[selectedCamera]->GetTransform().Rotate(y / 32768.0f * cameras[selectedCamera]->mouseSensitivity, 0, 0);
 				}
 				
 			}
 		});
+
+	InputActionManager::CreateAction(L"Move");
+	InputActionManager::AssignBindingToAction(L"Move", InputActionManager::InputBindings::XControllerLeftStick);
+
+	InputActionManager::GetAction(L"Move").OnTrigger.push_back([&](InputActionManager::InputData data)
+		{
+			if (data.inputType == InputActionManager::InputType::Value && data.controllerIndex == CONTROLLER_1)
+			{
+				std::optional<XMFLOAT2> vector = data.value.GetValue<XMFLOAT2>();
+				float x = vector.value().x;
+				float y = vector.value().y;
+
+				if (vector.value().x < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && vector.value().x > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) { x = 0; }
+				if (vector.value().y < XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE && vector.value().y > -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) { y = 0; }
+
+				if (x != 0 || y != 0)
+				{
+					cameras[selectedCamera]->isDirty = true;
+
+					cameras[selectedCamera]->GetTransform().MoveRelative(cameras[selectedCamera]->moveSpeed * x / 32768.0f * deltaTime, 
+																		0, 
+																		cameras[selectedCamera]->moveSpeed * y / 32768.0f * deltaTime);
+				}
+			}
+		});
+
 }
 
 void Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile)
@@ -334,8 +360,10 @@ void Game::OnResize()
 // --------------------------------------------------------
 // Update your game here - user input, move objects, AI, etc.
 // --------------------------------------------------------
-void Game::Update(float deltaTime, float totalTime)
+void Game::Update(float _deltaTime, float totalTime)
 {
+	deltaTime = _deltaTime;
+
 	// Example input checking: Quit if the escape key is pressed
 	if (InputManager::KeyDown(VK_ESCAPE))
 		Quit();
@@ -345,9 +373,9 @@ void Game::Update(float deltaTime, float totalTime)
 		audioManager->playSound("Sounds/vine-boom.wav");
 	}
 
-	cameras[selectedCamera].get()->Update(deltaTime);
-	ImGuiUpdate(deltaTime, totalTime);
-	BuildUI(deltaTime, totalTime);
+	cameras[selectedCamera].get()->Update(_deltaTime);
+	ImGuiUpdate(_deltaTime, totalTime);
+	BuildUI(_deltaTime, totalTime);
 
 	mouseX = (InputManager::GetMouseX() / (float) windowWidth);
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
@@ -392,7 +420,7 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}
 
-	timeSincePhysicsStep += deltaTime;
+	timeSincePhysicsStep += _deltaTime;
 
 	while (timeSincePhysicsStep >= cDeltaTime && runPhysics)
 	{
@@ -410,7 +438,7 @@ void Game::Update(float deltaTime, float totalTime)
 			}
 		}
 	}
-	audioManager->update_audio(deltaTime);
+	audioManager->update_audio(_deltaTime);
 }
 
 // --------------------------------------------------------
