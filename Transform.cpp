@@ -156,18 +156,6 @@ void Transform::MoveAbsolute(DirectX::XMFLOAT3 offset)
 	isDirty = true;
 }
 
-//void Transform::MoveRelative(float x, float y, float z)
-//{
-//	DirectX::XMVECTOR moveOffset = DirectX::XMVectorSet(x, y, z, 0.0f);
-//	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-//
-//	moveOffset = DirectX::XMVectorAdd(DirectX::XMLoadFloat3(&position), DirectX::XMVector3Rotate(moveOffset, quat));
-//
-//	DirectX::XMStoreFloat3(&position, moveOffset);
-//
-//	isDirty = true;
-//}
-
 void Transform::Rotate(float pitch, float yaw, float roll)
 {
 	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);

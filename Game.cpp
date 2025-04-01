@@ -492,7 +492,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 void Game::RenderScene()
 {
-	auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
+	auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>();
 	for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
 	{
 		material_comp.material->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
@@ -517,10 +517,10 @@ void Game::RenderScene()
 			material_comp.material->pixelShader->CopyAllBufferData();
 
 			//Set Vertex Shader and Load Data
-			material_comp.material->vertexShader->SetMatrix4x4("world", Systems::GetWorldMatrix(transform_comp));
+			material_comp.material->vertexShader->SetMatrix4x4("world", Systems::CalcWorldMatrix(transform_comp));
 			material_comp.material->vertexShader->SetMatrix4x4("view", cameras[selectedCamera]->GetViewMatrix());
 			material_comp.material->vertexShader->SetMatrix4x4("projection", cameras[selectedCamera]->GetProjectionMatrix());
-			material_comp.material->vertexShader->SetMatrix4x4("worldInvTranspose", Systems::GetWorldInverseTransposeMatrix(transform_comp));
+			material_comp.material->vertexShader->SetMatrix4x4("worldInvTranspose", Systems::CalcWorldInverseTransposeMatrix(transform_comp));
 
 			material_comp.material->vertexShader->CopyAllBufferData();
 
@@ -604,13 +604,13 @@ void Game::BuildUI(float deltaTime, float totalTime)
 			std::string string = "Entity " + std::to_string(i);
 			if (ImGui::TreeNode(string.data()))
 			{
-				XMFLOAT3 position = transform_comp.position;
+				XMFLOAT3 position = transform_comp.GetPosition();
 				ImGui::DragFloat3("Position", &position.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				transform_comp.position = position;
+				transform_comp.SetPosition(position);
 
-				XMFLOAT3 scale = transform_comp.scale;
+				XMFLOAT3 scale = transform_comp.GetScale();
 				ImGui::DragFloat3("Scale", &scale.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				transform_comp.scale = scale;
+				transform_comp.SetScale(scale);
 
 				ImGui::TreePop();
 			}
@@ -693,11 +693,14 @@ void Game::BuildUI(float deltaTime, float totalTime)
 	{
 		if (ImGui::Button("Cycle Texture"))
 		{
-			//for (int i = 0; i < gameEntities.size(); i++)
-			//{
-			//	ImGuiMaterialIndex++;
-			//	gameEntities[i].SetMaterial(materials[ImGuiMaterialIndex % materials.size()]);
-			//}
+			auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
+
+			int i = 0;
+			for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
+			{
+				ImGuiMaterialIndex++;
+				material_comp.material = materials[ImGuiMaterialIndex % materials.size()];
+			}
 		}
 
 		ImGui::TreePop();

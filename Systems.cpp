@@ -1,35 +1,47 @@
 #include "Systems.h"
 
 #pragma region TransformLogic
-DirectX::XMFLOAT4X4	Systems::GetWorldMatrix(TransformComponent transform_comp)
+DirectX::XMFLOAT4X4	Systems::CalcWorldMatrix(TransformComponent& transform_comp)
 {
-	if (transform_comp.isDirty)
+	if (transform_comp.IsDirty())
 	{
-		DirectX::XMVECTOR quat = DirectX::XMVectorSet(transform_comp.quaternion.x, transform_comp.quaternion.y, transform_comp.quaternion.z, transform_comp.quaternion.w);
-		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(transform_comp.scale.x, transform_comp.scale.y, transform_comp.scale.z) *
+		//Get Values
+		DirectX::XMFLOAT3 pos = transform_comp.GetPosition();
+		DirectX::XMFLOAT3 scale = transform_comp.GetScale();
+		DirectX::XMFLOAT4 quaternion = transform_comp.GetQuaternion();
+
+		//Calculate Matrices
+		DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
 			DirectX::XMMatrixRotationQuaternion(quat) * 
-			DirectX::XMMatrixTranslation(transform_comp.position.x, transform_comp.position.y, transform_comp.position.z);
+			DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 
 		XMStoreFloat4x4(&transform_comp.worldMatrix, world);
 		XMStoreFloat4x4(&transform_comp.worldInverseTransposeMatrix, XMMatrixInverse(0, XMMatrixTranspose(world)));
-		transform_comp.isDirty = false;
+		transform_comp.SetIsDirty(false);
 	}
 
 	return transform_comp.worldMatrix;
 }
 
-DirectX::XMFLOAT4X4 Systems::GetWorldInverseTransposeMatrix(TransformComponent transform_comp)
+DirectX::XMFLOAT4X4 Systems::CalcWorldInverseTransposeMatrix(TransformComponent& transform_comp)
 {
-	if (transform_comp.isDirty)
+	if (transform_comp.IsDirty())
 	{
-		DirectX::XMVECTOR quat = DirectX::XMVectorSet(transform_comp.quaternion.x, transform_comp.quaternion.y, transform_comp.quaternion.z, transform_comp.quaternion.w);
-		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(transform_comp.scale.x, transform_comp.scale.y, transform_comp.scale.z) * 
+		//Get Values
+		DirectX::XMFLOAT3 pos = transform_comp.GetPosition();
+		DirectX::XMFLOAT3 scale = transform_comp.GetScale();
+		DirectX::XMFLOAT4 quaternion = transform_comp.GetQuaternion();
+
+		//Calculate Matrices
+		DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * 
 			DirectX::XMMatrixRotationQuaternion(quat) * 
-			DirectX::XMMatrixTranslation(transform_comp.position.x, transform_comp.position.y, transform_comp.position.z);
+			DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 		
 		XMStoreFloat4x4(&transform_comp.worldMatrix, world);
 		XMStoreFloat4x4(&transform_comp.worldInverseTransposeMatrix, XMMatrixInverse(0, XMMatrixTranspose(world)));
-		transform_comp.isDirty = false;
+		transform_comp.SetIsDirty(false);
 	}
 
 	return transform_comp.worldInverseTransposeMatrix;
