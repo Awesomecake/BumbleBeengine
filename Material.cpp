@@ -12,6 +12,18 @@ void Material::PrepareMaterial()
 	for (auto& s : samplers) { pixelShader->SetSamplerState(s.first.c_str(), s.second); }
 }
 
+//returns the pixel shader
+std::shared_ptr<SimplePixelShader> Material::GetPixelShader()
+{
+	return pixelShader;
+}
+
+//returns the vertex shader
+std::shared_ptr<SimpleVertexShader> Material::GetVertexShader()
+{
+	return vertexShader;
+}
+
 Material::~Material()
 {
 
