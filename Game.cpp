@@ -151,9 +151,14 @@ void Game::Init()
 	XMFLOAT4 identityQuat;
 	XMStoreFloat4(&identityQuat, DirectX::XMQuaternionIdentity());
 	entt::entity testEntity = registry.create();
-	registry.emplace<TransformComponent>(testEntity);
+	registry.emplace<TransformComponent>(testEntity, XMFLOAT3(-3, 0, 0));
 	registry.emplace<MeshComponent>(testEntity, cube);
 	registry.emplace<MaterialComponent>(testEntity, materials[0]);
+
+	entt::entity testEntity2 = registry.create();
+	registry.emplace<TransformComponent>(testEntity2, XMFLOAT3(3,0,0));
+	registry.emplace<MeshComponent>(testEntity2, sphere);
+	registry.emplace<MaterialComponent>(testEntity2, materials[0]);
 
 	//gameEntities.push_back(GameEntity(sphere, materials[0], sphere1));
 	//gameEntities.push_back(GameEntity(sphere, materials[0], sphere2));
@@ -487,18 +492,6 @@ void Game::Draw(float deltaTime, float totalTime)
 
 void Game::RenderScene()
 {
-	//for (GameEntity entity : gameEntities)
-	//{
-	//	entity.GetMaterial()->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
-	//	entity.GetMaterial()->pixelShader->SetSamplerState("ShadowSampler", shadowMap.shadowSampler);
-	//	entity.GetMaterial()->pixelShader->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
-
-	//	entity.GetMaterial()->vertexShader->SetMatrix4x4("lightView", shadowMap.shadowViewMatrix);
-	//	entity.GetMaterial()->vertexShader->SetMatrix4x4("lightProjection", shadowMap.shadowProjectionMatrix);
-
-	//	entity.Draw(context, cameras[selectedCamera]);
-	//}
-
 	auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
 	for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
 	{
@@ -534,7 +527,6 @@ void Game::RenderScene()
 			mesh_comp.mesh->Draw(context);
 		}
 	}
-
 
 	sky->ambient = ambientColor;
 	sky->Draw(context, cameras[selectedCamera]);
@@ -602,26 +594,27 @@ void Game::BuildUI(float deltaTime, float totalTime)
 
 	if (ImGui::TreeNode("Scene Entities"))
 	{
-		//for (int i = 0; i < gameEntities.size(); i++)
-		//{
-		//	std::string string = "Entity " + std::to_string(i);
-		//	if (ImGui::TreeNode(string.data()))
-		//	{
-		//		XMFLOAT3 position = gameEntities[i].GetTransform().GetPosition();
-		//		ImGui::DragFloat3("Position", &position.x, 0.005f, -5.0f, 5.0f, "%.3f");
-		//		gameEntities[i].GetTransform().SetPosition(position);
+		auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
 
-		//		//XMFLOAT3 rotation = gameEntities[i].GetTransform().GetPitchYawRoll();
-		//		//ImGui::DragFloat3("Rotation (Radians)", &rotation.x, 0.005f, -5.0f, 5.0f, "%.3f");
-		//		//gameEntities[i].GetTransform().SetRotation(rotation);
+		int i = 0;
+		for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
+		{
+			i++;
 
-		//		XMFLOAT3 scale = gameEntities[i].GetTransform().GetScale();
-		//		ImGui::DragFloat3("Scale", &scale.x, 0.005f, -5.0f, 5.0f, "%.3f");
-		//		gameEntities[i].GetTransform().SetScale(scale);
+			std::string string = "Entity " + std::to_string(i);
+			if (ImGui::TreeNode(string.data()))
+			{
+				XMFLOAT3 position = transform_comp.position;
+				ImGui::DragFloat3("Position", &position.x, 0.005f, -5.0f, 5.0f, "%.3f");
+				transform_comp.position = position;
 
-		//		ImGui::TreePop();
-		//	}
-		//}
+				XMFLOAT3 scale = transform_comp.scale;
+				ImGui::DragFloat3("Scale", &scale.x, 0.005f, -5.0f, 5.0f, "%.3f");
+				transform_comp.scale = scale;
+
+				ImGui::TreePop();
+			}
+		}
 
 		ImGui::TreePop();
 	}

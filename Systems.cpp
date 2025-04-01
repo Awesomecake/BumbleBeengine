@@ -1,5 +1,6 @@
 #include "Systems.h"
 
+#pragma region TransformLogic
 DirectX::XMFLOAT4X4	Systems::GetWorldMatrix(TransformComponent transform_comp)
 {
 	if (transform_comp.isDirty)
@@ -33,3 +34,5 @@ DirectX::XMFLOAT4X4 Systems::GetWorldInverseTransposeMatrix(TransformComponent t
 
 	return transform_comp.worldInverseTransposeMatrix;
 }
+#pragma endregion
+
