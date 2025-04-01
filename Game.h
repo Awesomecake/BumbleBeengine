@@ -111,15 +111,17 @@ private:
 
 	//--------------JoltPhysics----------------
 	PhysicsManager* physicsManager;
-	BodyID sphere1;
-	BodyID sphere2;
+	BodyID sphereBody1;
+	BodyID sphereBody2;
+	BodyID sphereBody3;
+	BodyID cubeBody1;
 
 	uint step = 0;
 
 	// We simulate the physics world in discrete time steps. 60 Hz is a good rate to update the physics system.
 	const float cDeltaTime = 1.0f / 60.0f;
 	float timeSincePhysicsStep = 0.f;
-	bool runPhysics = false;
+	bool runPhysics = true;
 
 	unordered_map<BodyID, GameEntity> bodyObjects;
 

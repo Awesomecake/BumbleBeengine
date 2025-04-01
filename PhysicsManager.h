@@ -197,7 +197,7 @@ public:
 	virtual void OnContactAdded(const Body& inBody1, const Body& inBody2, const ContactManifold& inManifold, ContactSettings& ioSettings) override
 	{
 		collisionDelegate(audioManager);
-		cout << "A contact was added" << endl;
+		//cout << "A contact was added" << endl;
 	}
 
 	virtual void OnContactPersisted(const Body& inBody1, const Body& inBody2, const ContactManifold& inManifold, ContactSettings& ioSettings) override
@@ -207,7 +207,7 @@ public:
 
 	virtual void OnContactRemoved(const SubShapeIDPair& inSubShapePair) override
 	{
-		cout << "A contact was removed" << endl;
+		//cout << "A contact was removed" << endl;
 	}
 };
 
@@ -235,10 +235,11 @@ public:
 
 	void JoltPhysicsFrame();
 	void DeInitPhysics();
-	BodyID CreatePhysicsSphereBody(RVec3 position, float size);
-	BodyID CreatePhysicsCubeBody(RVec3 position, Vec3 size);
+	BodyID CreatePhysicsSphereBody(RVec3 position, float size, EMotionType motionType);
+	BodyID CreatePhysicsCubeBody(RVec3 position, Vec3 size, EMotionType motionType);
 	void AddBodyVelocity(BodyID body, Vec3 velocity);
 	void SetBodyPosition(BodyID body, RVec3 position, JPH::EActivation activationType);
+	void SetBodyRotation(BodyID body, Quat rotation, JPH::EActivation activationType);
 	AllHitCollisionCollector<RayCastBodyCollector>  JoltRayCast(Vec3::ArgType origin, Vec3Arg direction, float length);
 	AllHitCollisionCollector<CollideShapeBodyCollector> JoltShapeCast(Vec3Arg min, Vec3Arg max, Vec3Arg direction);
 

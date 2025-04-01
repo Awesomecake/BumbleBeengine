@@ -143,14 +143,38 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
 	physicsManager = new PhysicsManager();
-	sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1);
-	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
-	sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1);
+	sphereBody1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic);
+	physicsManager->AddBodyVelocity(sphereBody1, Vec3(0.0f, -5.0f, 0.0f));
+	sphereBody2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic);
+	sphereBody3 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 0.0_r, 0.0_r), 1, EMotionType::Static);
+	cubeBody1 = physicsManager->CreatePhysicsCubeBody(RVec3(0.0_r, 0.0_r, 0.0_r), Vec3(1,1,1), EMotionType::Static);
+
+	//Creating Render-Testing GameObjects
+	{
+		gameEntities.push_back(GameEntity(cube, materials[0]));
+		gameEntities.push_back(GameEntity(cylinder, materials[0]));
+		gameEntities.push_back(GameEntity(helix, materials[0]));
+		gameEntities.push_back(GameEntity(sphere, materials[1]));
+		gameEntities.push_back(GameEntity(torus, materials[1]));
+		gameEntities.push_back(GameEntity(quad, materials[1]));
+		gameEntities.push_back(GameEntity(cube, materials[2]));
+
+		gameEntities[0].GetTransform().SetPosition(-9, -3, 0);
+		physicsManager->SetBodyPosition(cubeBody1, Vec3(-9, -3, 0), EActivation::DontActivate);
+			
+		gameEntities[1].GetTransform().SetPosition(-6, -3, 0);
+		gameEntities[2].GetTransform().SetPosition(-3, -3, 0);
+		gameEntities[4].GetTransform().SetPosition(3, -3, 0);
+		gameEntities[5].GetTransform().SetPosition(6, -3, 0);
+
+		gameEntities[6].GetTransform().SetScale(20, 1, 20);
+		gameEntities[6].GetTransform().SetPosition(0, -7, 0);
+	}
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
-	gameEntities.push_back(GameEntity(sphere, materials[0], sphere1));
-	gameEntities.push_back(GameEntity(sphere, materials[0], sphere2));
+	gameEntities.push_back(GameEntity(sphere, materials[0], sphereBody1));
+	gameEntities.push_back(GameEntity(sphere, materials[0], sphereBody2));
 
 #pragma region Constructing Lights
 	lights = std::vector<Light>();
@@ -196,7 +220,6 @@ void Game::Init()
 
 	audioManager = std::make_shared<AudioManager>();
 	InitializeInputActions();
-
 }
 
 // --------------------------------------------------------
@@ -287,7 +310,7 @@ void Game::InitializeInputActions()
 			XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
 			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-			BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
+			BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
 			GameEntity entity = GameEntity(sphere, materials[matLocation], id);
 
 			entity.GetTransform().SetScale(0.5, 0.5, 0.5);
@@ -337,23 +360,6 @@ void Game::CreateGeometry()
 	sphere = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/sphere.igme540obj").c_str(), device);
 	torus = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/torus.igme540obj").c_str(), device);
 	quad = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/quad.igme540obj").c_str(), device);
-
-	gameEntities.push_back(GameEntity(cube, materials[0]));
-	gameEntities.push_back(GameEntity(cylinder, materials[0]));
-	gameEntities.push_back(GameEntity(helix, materials[0]));
-	gameEntities.push_back(GameEntity(sphere, materials[1]));
-	gameEntities.push_back(GameEntity(torus, materials[1]));
-	gameEntities.push_back(GameEntity(quad, materials[1]));
-	gameEntities.push_back(GameEntity(cube, materials[2]));
-
-	gameEntities[0].GetTransform().SetPosition(-9, -3, 0);
-	gameEntities[1].GetTransform().SetPosition(-6, -3, 0);
-	gameEntities[2].GetTransform().SetPosition(-3, -3, 0);
-	gameEntities[4].GetTransform().SetPosition(3, -3, 0);
-	gameEntities[5].GetTransform().SetPosition(6, -3, 0);
-
-	gameEntities[6].GetTransform().SetScale(20, 1, 20);
-	gameEntities[6].GetTransform().SetPosition(0, -7, 0 );
 }
 
 
@@ -402,8 +408,12 @@ void Game::Update(float _deltaTime, float totalTime)
 	mouseX = (InputManager::GetMouseX() / (float) windowWidth);
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 
-	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
-	//gameEntities[2].GetTransform().Rotate(deltaTime, 0, deltaTime);
+	gameEntities[3].GetTransform().SetPosition(3 * cos(totalTime), -3, 3 * sin(totalTime));
+	physicsManager->SetBodyPosition(sphereBody3, Vec3(3 * cos(totalTime), -3, 3 * sin(totalTime)), JPH::EActivation::DontActivate);
+	
+	gameEntities[0].GetTransform().Rotate(deltaTime, 0, deltaTime);
+	XMFLOAT4 quat = gameEntities[0].GetTransform().GetRotation();
+	physicsManager->SetBodyRotation(cubeBody1, Quat(quat.x,quat.y,quat.z,quat.w).Normalized(), JPH::EActivation::DontActivate);
 
 	if (InputManager::KeyPress(VK_INSERT))
 	{
