@@ -148,8 +148,15 @@ void Game::Init()
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
-	gameEntities.push_back(GameEntity(sphere, materials[0], sphere1));
-	gameEntities.push_back(GameEntity(sphere, materials[0], sphere2));
+	XMFLOAT4 identityQuat;
+	XMStoreFloat4(&identityQuat, DirectX::XMQuaternionIdentity());
+	entt::entity testEntity = registry.create();
+	registry.emplace<TransformComponent>(testEntity);
+	registry.emplace<MeshComponent>(testEntity, cube);
+	registry.emplace<MaterialComponent>(testEntity, materials[0]);
+
+	//gameEntities.push_back(GameEntity(sphere, materials[0], sphere1));
+	//gameEntities.push_back(GameEntity(sphere, materials[0], sphere2));
 
 #pragma region Constructing Lights
 	lights = std::vector<Light>();
@@ -289,7 +296,7 @@ void Game::CreateGeometry()
 	torus = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/torus.igme540obj").c_str(), device);
 	quad = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/quad.igme540obj").c_str(), device);
 
-	gameEntities.push_back(GameEntity(cube, materials[0]));
+	/*gameEntities.push_back(GameEntity(cube, materials[0]));
 	gameEntities.push_back(GameEntity(cylinder, materials[0]));
 	gameEntities.push_back(GameEntity(helix, materials[0]));
 	gameEntities.push_back(GameEntity(sphere, materials[1]));
@@ -304,7 +311,7 @@ void Game::CreateGeometry()
 	gameEntities[5].GetTransform().SetPosition(6, -3, 0);
 
 	gameEntities[6].GetTransform().SetScale(20, 1, 20);
-	gameEntities[6].GetTransform().SetPosition(0, -7, 0 );
+	gameEntities[6].GetTransform().SetPosition(0, -7, 0 );*/
 }
 
 
@@ -351,67 +358,67 @@ void Game::Update(float deltaTime, float totalTime)
 	mouseX = (InputManager::GetMouseX() / (float) windowWidth);
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 
-	gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
+	//gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
 	//gameEntities[2].GetTransform().Rotate(deltaTime, 0, deltaTime);
 
 	
 #pragma region Physics System
 
-	if (InputManager::KeyPress(VK_DELETE))
-	{
-		int matLocation = rand() % materials.size();
+	//if (InputManager::KeyPress(VK_DELETE))
+	//{
+	//	int matLocation = rand() % materials.size();
 
-		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
-		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
+	//	XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
+	//	XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
-		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
-		GameEntity entity = GameEntity(sphere, materials[matLocation], id);
-		entity.GetTransform().SetScale(0.5, 0.5, 0.5);
-		entity.GetTransform().SetPosition(camPos);
-		gameEntities.push_back(entity);
-		bodyObjects[id] = entity;
-	}
+	//	BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
+	//	physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+	//	GameEntity entity = GameEntity(sphere, materials[matLocation], id);
+	//	entity.GetTransform().SetScale(0.5, 0.5, 0.5);
+	//	entity.GetTransform().SetPosition(camPos);
+	//	gameEntities.push_back(entity);
+	//	bodyObjects[id] = entity;
+	//}
 
-	if (InputManager::KeyPress(VK_INSERT))
-	{
-		XMFLOAT3 pos = cameras[0]->GetTransform().GetPosition();
-		XMFLOAT3 forward = cameras[0]->GetTransform().GetForward();
+	//if (InputManager::KeyPress(VK_INSERT))
+	//{
+	//	XMFLOAT3 pos = cameras[0]->GetTransform().GetPosition();
+	//	XMFLOAT3 forward = cameras[0]->GetTransform().GetForward();
 
-		AllHitCollisionCollector<RayCastBodyCollector> collector = physicsManager->JoltRayCast(Vec3(pos.x, pos.y, pos.z), Vec3Arg(forward.x, forward.y, forward.z), 100);
+	//	AllHitCollisionCollector<RayCastBodyCollector> collector = physicsManager->JoltRayCast(Vec3(pos.x, pos.y, pos.z), Vec3Arg(forward.x, forward.y, forward.z), 100);
 
-		bool hasHit = collector.HadHit();
+	//	bool hasHit = collector.HadHit();
 
-		if (hasHit)
-		{
-			for (auto& hitBody : collector.mHits)
-			{
-				if (bodyObjects.contains(hitBody.mBodyID))
-				{
-					bodyObjects[hitBody.mBodyID].SetMaterial(materials[1]);
-				}
-			}
-		}
-	}
-	
-	timeSincePhysicsStep += deltaTime;
+	//	if (hasHit)
+	//	{
+	//		for (auto& hitBody : collector.mHits)
+	//		{
+	//			if (bodyObjects.contains(hitBody.mBodyID))
+	//			{
+	//				bodyObjects[hitBody.mBodyID].SetMaterial(materials[1]);
+	//			}
+	//		}
+	//	}
+	//}
+	//
+	//timeSincePhysicsStep += deltaTime;
 
-	while (timeSincePhysicsStep >= cDeltaTime && runPhysics)
-	{
-		physicsManager->JoltPhysicsFrame();
-		timeSincePhysicsStep -= cDeltaTime;
+	//while (timeSincePhysicsStep >= cDeltaTime && runPhysics)
+	//{
+	//	physicsManager->JoltPhysicsFrame();
+	//	timeSincePhysicsStep -= cDeltaTime;
 
-		// Next step
-		++step;
+	//	// Next step
+	//	++step;
 
-		for (auto& entity : gameEntities)
-		{
-			if (entity.GetIsUsingPhysics())
-			{
-				entity.UpdateTransformFromPhysicsBody(physicsManager);
-			}
-		}
-	}
+	//	for (auto& entity : gameEntities)
+	//	{
+	//		if (entity.GetIsUsingPhysics())
+	//		{
+	//			entity.UpdateTransformFromPhysicsBody(physicsManager);
+	//		}
+	//	}
+	//}
 
 #pragma endregion
 
@@ -445,7 +452,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	shadowMap.DrawShadowMap(context,gameEntities,backBufferRTV, depthBufferDSV);
+	//shadowMap.DrawShadowMap(context,gameEntities,backBufferRTV, depthBufferDSV);
 
 	context->OMSetRenderTargets(1, postProcess1.ppRTV.GetAddressOf(), depthBufferDSV.Get()); //Setup First Post Processing Target
 	
@@ -480,17 +487,54 @@ void Game::Draw(float deltaTime, float totalTime)
 
 void Game::RenderScene()
 {
-	for (GameEntity entity : gameEntities)
+	//for (GameEntity entity : gameEntities)
+	//{
+	//	entity.GetMaterial()->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
+	//	entity.GetMaterial()->pixelShader->SetSamplerState("ShadowSampler", shadowMap.shadowSampler);
+	//	entity.GetMaterial()->pixelShader->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
+
+	//	entity.GetMaterial()->vertexShader->SetMatrix4x4("lightView", shadowMap.shadowViewMatrix);
+	//	entity.GetMaterial()->vertexShader->SetMatrix4x4("lightProjection", shadowMap.shadowProjectionMatrix);
+
+	//	entity.Draw(context, cameras[selectedCamera]);
+	//}
+
+	auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
+	for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
 	{
-		entity.GetMaterial()->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
-		entity.GetMaterial()->pixelShader->SetSamplerState("ShadowSampler", shadowMap.shadowSampler);
-		entity.GetMaterial()->pixelShader->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
+		material_comp.material->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
 
-		entity.GetMaterial()->vertexShader->SetMatrix4x4("lightView", shadowMap.shadowViewMatrix);
-		entity.GetMaterial()->vertexShader->SetMatrix4x4("lightProjection", shadowMap.shadowProjectionMatrix);
+		material_comp.material->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
+		material_comp.material->pixelShader->SetSamplerState("ShadowSampler", shadowMap.shadowSampler);
+		material_comp.material->pixelShader->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
+		
+		material_comp.material->vertexShader->SetMatrix4x4("lightView", shadowMap.shadowViewMatrix);
+		material_comp.material->vertexShader->SetMatrix4x4("lightProjection", shadowMap.shadowProjectionMatrix);
 
-		entity.Draw(context, cameras[selectedCamera]);
+		{
+			DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2((float)InputManager::GetMouseX(), (float)InputManager::GetMouseY());
+			material_comp.material->PrepareMaterial();
+
+			//Set Pixel Shader and Load Data
+			material_comp.material->pixelShader->SetFloat4("surfaceColor", material_comp.material->surfaceColor);
+			material_comp.material->pixelShader->SetFloat2("mousePos", mousePos);
+			material_comp.material->pixelShader->SetFloat("roughness", material_comp.material->roughness);
+			material_comp.material->pixelShader->SetFloat3("cameraPos", cameras[selectedCamera]->GetTransform().GetPosition());
+
+			material_comp.material->pixelShader->CopyAllBufferData();
+
+			//Set Vertex Shader and Load Data
+			material_comp.material->vertexShader->SetMatrix4x4("world", Systems::GetWorldMatrix(transform_comp));
+			material_comp.material->vertexShader->SetMatrix4x4("view", cameras[selectedCamera]->GetViewMatrix());
+			material_comp.material->vertexShader->SetMatrix4x4("projection", cameras[selectedCamera]->GetProjectionMatrix());
+			material_comp.material->vertexShader->SetMatrix4x4("worldInvTranspose", Systems::GetWorldInverseTransposeMatrix(transform_comp));
+
+			material_comp.material->vertexShader->CopyAllBufferData();
+
+			mesh_comp.mesh->Draw(context);
+		}
 	}
+
 
 	sky->ambient = ambientColor;
 	sky->Draw(context, cameras[selectedCamera]);
@@ -558,26 +602,26 @@ void Game::BuildUI(float deltaTime, float totalTime)
 
 	if (ImGui::TreeNode("Scene Entities"))
 	{
-		for (int i = 0; i < gameEntities.size(); i++)
-		{
-			std::string string = "Entity " + std::to_string(i);
-			if (ImGui::TreeNode(string.data()))
-			{
-				XMFLOAT3 position = gameEntities[i].GetTransform().GetPosition();
-				ImGui::DragFloat3("Position", &position.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				gameEntities[i].GetTransform().SetPosition(position);
+		//for (int i = 0; i < gameEntities.size(); i++)
+		//{
+		//	std::string string = "Entity " + std::to_string(i);
+		//	if (ImGui::TreeNode(string.data()))
+		//	{
+		//		XMFLOAT3 position = gameEntities[i].GetTransform().GetPosition();
+		//		ImGui::DragFloat3("Position", &position.x, 0.005f, -5.0f, 5.0f, "%.3f");
+		//		gameEntities[i].GetTransform().SetPosition(position);
 
-				//XMFLOAT3 rotation = gameEntities[i].GetTransform().GetPitchYawRoll();
-				//ImGui::DragFloat3("Rotation (Radians)", &rotation.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				//gameEntities[i].GetTransform().SetRotation(rotation);
+		//		//XMFLOAT3 rotation = gameEntities[i].GetTransform().GetPitchYawRoll();
+		//		//ImGui::DragFloat3("Rotation (Radians)", &rotation.x, 0.005f, -5.0f, 5.0f, "%.3f");
+		//		//gameEntities[i].GetTransform().SetRotation(rotation);
 
-				XMFLOAT3 scale = gameEntities[i].GetTransform().GetScale();
-				ImGui::DragFloat3("Scale", &scale.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				gameEntities[i].GetTransform().SetScale(scale);
+		//		XMFLOAT3 scale = gameEntities[i].GetTransform().GetScale();
+		//		ImGui::DragFloat3("Scale", &scale.x, 0.005f, -5.0f, 5.0f, "%.3f");
+		//		gameEntities[i].GetTransform().SetScale(scale);
 
-				ImGui::TreePop();
-			}
-		}
+		//		ImGui::TreePop();
+		//	}
+		//}
 
 		ImGui::TreePop();
 	}
@@ -656,11 +700,11 @@ void Game::BuildUI(float deltaTime, float totalTime)
 	{
 		if (ImGui::Button("Cycle Texture"))
 		{
-			for (int i = 0; i < gameEntities.size(); i++)
-			{
-				ImGuiMaterialIndex++;
-				gameEntities[i].SetMaterial(materials[ImGuiMaterialIndex % materials.size()]);
-			}
+			//for (int i = 0; i < gameEntities.size(); i++)
+			//{
+			//	ImGuiMaterialIndex++;
+			//	gameEntities[i].SetMaterial(materials[ImGuiMaterialIndex % materials.size()]);
+			//}
 		}
 
 		ImGui::TreePop();

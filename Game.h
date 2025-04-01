@@ -19,6 +19,8 @@
 #include "XInputManager.h"
 
 #include "EnTT/include/entt/entt.hpp"
+#include "Components.h"
+#include "Systems.h"
 
 #include <memory>
 #include <vector>
@@ -47,7 +49,7 @@ public:
 	int ImGuiMaterialIndex = 0;
 	DirectX::XMFLOAT3 ambientColor = { 0.5f,0.5f,0.5f };
 
-	std::vector<GameEntity> gameEntities;
+	//std::vector<GameEntity> gameEntities;
 	std::vector<Light> lights = std::vector<Light>();
 
 	std::shared_ptr<Sky> sky;
@@ -120,7 +122,7 @@ private:
 	float timeSincePhysicsStep = 0.f;
 	bool runPhysics = false;
 
-	unordered_map<BodyID, GameEntity> bodyObjects;
+	//unordered_map<BodyID, GameEntity> bodyObjects;
 
 	entt::registry registry;
 
