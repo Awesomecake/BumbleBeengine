@@ -94,7 +94,7 @@ void ShadowMap::MakeProjection(XMFLOAT3 direction)
 	XMStoreFloat4x4(&shadowProjectionMatrix, lightProjection);
 }
 
-void ShadowMap::DrawShadowMap(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, entt::registry registry, Microsoft::WRL::ComPtr<ID3D11RenderTargetView> backBufferRTV, Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthBufferDSV)
+void ShadowMap::DrawShadowMap(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, entt::registry& registry, Microsoft::WRL::ComPtr<ID3D11RenderTargetView> backBufferRTV, Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthBufferDSV)
 {
 	context->ClearDepthStencilView(shadowDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 

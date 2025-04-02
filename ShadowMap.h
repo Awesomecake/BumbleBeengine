@@ -33,5 +33,5 @@ public:
 
 	void Resize(int _windowWidth, int _windowHeight);
 	void MakeProjection(DirectX::XMFLOAT3 direction);
-	void DrawShadowMap(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, entt::registry registry, Microsoft::WRL::ComPtr<ID3D11RenderTargetView> backBufferRTV, Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthBufferDSV);
+	void DrawShadowMap(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, entt::registry& registry, Microsoft::WRL::ComPtr<ID3D11RenderTargetView> backBufferRTV, Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthBufferDSV);
 };

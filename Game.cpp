@@ -471,7 +471,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	//shadowMap.DrawShadowMap(context,registry,backBufferRTV, depthBufferDSV);
+	shadowMap.DrawShadowMap(context,registry,backBufferRTV, depthBufferDSV);
 
 	context->OMSetRenderTargets(1, postProcess1.ppRTV.GetAddressOf(), depthBufferDSV.Get()); //Setup First Post Processing Target
 	
