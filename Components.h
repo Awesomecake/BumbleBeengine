@@ -75,7 +75,6 @@ private:
 struct PhysicsComponent
 {
 	JPH::BodyID bodyID;
-
 };
 
 struct CameraComponent

@@ -356,10 +356,6 @@ void Game::Update(float deltaTime, float totalTime)
 
 	mouseX = (InputManager::GetMouseX() / (float) windowWidth);
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
-
-	//gameEntities[3].GetTransform().SetPosition(3*cos(totalTime), -3, 3*sin(totalTime));
-	//gameEntities[2].GetTransform().Rotate(deltaTime, 0, deltaTime);
-
 	
 #pragma region Physics System
 
@@ -487,10 +483,7 @@ void Game::RenderScene()
 {
 	auto lightView = registry.view<LightComponent>();
 	std::vector<LightComponent> lights = std::vector<LightComponent>();
-	for (auto [entity, light_comp] : lightView.each())
-	{
-		lights.push_back(light_comp);
-	}
+	for (auto [entity, light_comp] : lightView.each()) { lights.push_back(light_comp); }
 
 	auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>();
 	for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
