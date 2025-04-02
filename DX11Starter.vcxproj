@@ -309,7 +309,6 @@
     <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
-    <ClCompile Include="Sky.cpp" />
     <ClCompile Include="Systems.cpp" />
     <ClCompile Include="TransformEuler.cpp" />
     <ClCompile Include="XInputManager.cpp" />
@@ -629,7 +628,6 @@
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="SimpleShader.h" />
-    <ClInclude Include="Sky.h" />
     <ClInclude Include="Systems.h" />
     <ClInclude Include="TransformEuler.h" />
     <ClInclude Include="Vertex.h" />

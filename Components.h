@@ -6,6 +6,14 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
+#pragma region tempHeaders
+#include "Camera.h"
+#include <WICTextureLoader.h>
+#include "PathHelpers.h"
+
+#pragma endregion
+
+
 struct MeshComponent
 {
 	std::shared_ptr<Mesh> mesh;
@@ -82,6 +90,55 @@ struct CameraComponent
 
 };
 
+struct SkyBoxComponent
+{
+private:
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampleState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> stencilState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerState;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cubeMapTexture;
+
+	std::shared_ptr<Mesh> mesh;
+	std::shared_ptr<SimplePixelShader> ps;
+	std::shared_ptr<SimpleVertexShader> vs;
+
+public:
+	SkyBoxComponent(std::shared_ptr<Mesh> _mesh, Microsoft::WRL::ComPtr<ID3D11SamplerState> _sampleState, 
+		Microsoft::WRL::ComPtr<ID3D11Device> device, Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, bool _isUsed)
+	{
+		sampleState = _sampleState;
+		mesh = _mesh;
+
+		D3D11_RASTERIZER_DESC rasterizerDescription = {};
+		rasterizerDescription.FillMode = D3D11_FILL_SOLID;
+		rasterizerDescription.CullMode = D3D11_CULL_FRONT;
+		device->CreateRasterizerState(&rasterizerDescription, &rasterizerState);
+
+		D3D11_DEPTH_STENCIL_DESC stencilDescription = {};
+		stencilDescription.DepthEnable = true;
+		stencilDescription.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		device->CreateDepthStencilState(&stencilDescription, &stencilState);
+
+		ps = std::make_shared<SimplePixelShader>(device, context, FixPath(L"SkyPixelShader.cso").c_str());
+		vs = std::make_shared<SimpleVertexShader>(device, context, FixPath(L"SkyVertexShader.cso").c_str());
+
+		isUsed = _isUsed;
+	}
+
+	const std::shared_ptr<Mesh> GetMesh() const { return mesh; }
+	const std::shared_ptr<SimplePixelShader> GetPixelShader() const { return ps; }
+	const std::shared_ptr<SimpleVertexShader> GetVertexShader() const { return vs; }
+
+	const Microsoft::WRL::ComPtr<ID3D11SamplerState> GetSampleState() const { return sampleState; }
+	const Microsoft::WRL::ComPtr<ID3D11DepthStencilState> GetStencilState() const { return stencilState; }
+	const Microsoft::WRL::ComPtr<ID3D11RasterizerState> GetRasterizerState() const { return rasterizerState; }
+	const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetCubeMapTexture() const { return cubeMapTexture; }
+	const void SetCubeMapTexture(Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> _cubeMapTexture) { cubeMapTexture = _cubeMapTexture; }
+
+	DirectX::XMFLOAT3 ambient;
+	bool isUsed;
+};
+
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_POINT 1
 #define LIGHT_TYPE_SPOT 2
@@ -102,7 +159,7 @@ struct LightComponent
 		isShadowMap = _isShadowMap;
 	}
 
-	//Data Structure is designed to be sent to the shader
+	//Data Structure is designed to be sent to the pixel shader
 	//Do Not Change
 	int Type;
 	DirectX::XMFLOAT3 Direction;

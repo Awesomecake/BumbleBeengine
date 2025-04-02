@@ -11,4 +11,16 @@ public:
 	static DirectX::XMFLOAT4X4 CalcWorldInverseTransposeMatrix(TransformComponent& transform_comp);
 
 	static void UpdateTransformFromPhysicsBody(PhysicsManager* physicsManager, PhysicsComponent& physics_comp, TransformComponent& transform_comp);
+
+	static void DrawSkyBox(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera, SkyBoxComponent skybox_comp);
+
+	static Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> CreateCubeMap(
+		Microsoft::WRL::ComPtr<ID3D11Device> device,
+		Microsoft::WRL::ComPtr<ID3D11DeviceContext> context,
+		const wchar_t* right,
+		const wchar_t* left,
+		const wchar_t* up,
+		const wchar_t* down,
+		const wchar_t* front,
+		const wchar_t* back);
 };

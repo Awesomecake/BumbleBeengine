@@ -121,7 +121,17 @@ void Game::Init()
 
 	CreateGeometry();
 
-	sky = std::make_shared<Sky>(cube, samplerState, device, context, FixPath(L"../../Assets/Skies/Planet/").c_str());
+	entt::entity skyEntity = registry.create();
+	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);
+
+	registry.get<SkyBoxComponent>(skyEntity).SetCubeMapTexture(Systems::CreateCubeMap(device, context,
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"right.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"left.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"up.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"down.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"front.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"back.png")).c_str()
+	));
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -521,8 +531,15 @@ void Game::RenderScene()
 		}
 	}
 
-	sky->ambient = ambientColor;
-	sky->Draw(context, cameras[selectedCamera]);
+	auto skyboxview = registry.view<SkyBoxComponent>();
+	for (auto [entity, skyBox_comp] : skyboxview.each())
+	{
+		if (skyBox_comp.isUsed)
+		{
+			skyBox_comp.ambient = ambientColor;
+			Systems::DrawSkyBox(context, cameras[selectedCamera], skyBox_comp);
+		}
+	}
 }
 
 #pragma region ImGui
