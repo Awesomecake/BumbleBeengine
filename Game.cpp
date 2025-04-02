@@ -161,46 +161,25 @@ void Game::Init()
 	registry.emplace<PhysicsComponent>(testEntity2, sphere2);
 
 #pragma region Constructing Lights
-	lights = std::vector<Light>();
+	entt::entity light1 = registry.create();
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	registry.emplace<LightComponent>(light1, LIGHT_TYPE_POINT, XMFLOAT3(0, 0, 0), 10, XMFLOAT3(0, 0, 0), 2, XMFLOAT3(1, 0, 0), 0, false);
 
-	Light light3 = Light();
-	light3.Direction = XMFLOAT3(0, -1, -1);
-	light3.Color = XMFLOAT3(1, 1, 1);
+	entt::entity light2 = registry.create();
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	registry.emplace<LightComponent>(light2, LIGHT_TYPE_POINT, XMFLOAT3(0, 0, 0), 10, XMFLOAT3(0, 0, 5), 2, XMFLOAT3(0, 0, 1), 0, false);
 
-	lights.push_back(light3);
+	entt::entity light3 = registry.create();
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	registry.emplace<LightComponent>(light3, LIGHT_TYPE_DIRECTIONAL, XMFLOAT3(0, -1, -1), 0, XMFLOAT3(0, 0, 0), 1, XMFLOAT3(1, 1, 1), 0, true);
 
-	Light light = Light();
-	light.Type = LIGHT_TYPE_POINT;
-	light.Color = XMFLOAT3(1, 0, 0);
-	light.Position = XMFLOAT3(0, 0, 0);
-	light.Range = 10;
-	light.Intensity = 2;
+	entt::entity light4 = registry.create();
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	registry.emplace<LightComponent>(light4, LIGHT_TYPE_DIRECTIONAL, XMFLOAT3(0, 0, -1), 0, XMFLOAT3(0, 0, 0), 1, XMFLOAT3(0, 1, 1), 0, false);
 
-	lights.push_back(light);
-
-	Light light2 = Light();
-	light2.Type = LIGHT_TYPE_POINT;
-	light2.Color = XMFLOAT3(0, 0, 1);
-	light2.Position = XMFLOAT3(0, 0, 5);
-	light2.Range = 10;
-	light2.Intensity = 2;
-
-	lights.push_back(light2);
-
-	Light light4 = light3;
-	light4.Direction = XMFLOAT3(-1, 0, 0);
-	light4.Color = XMFLOAT3(1, 1, 0);
-
-	lights.push_back(light4);
-
-	Light light5 = light3;
-	light5.Direction = XMFLOAT3(0, 0, -1);
-	light5.Color = XMFLOAT3(0, 1, 1);
-
-	lights.push_back(light5);
 #pragma endregion
 
-	shadowMap.MakeProjection(light3.Direction);
+	shadowMap.MakeProjection(XMFLOAT3(0, -1, -1));
 
 	audioManager = std::make_shared<AudioManager>();
 	InitializeInputActions();
@@ -471,7 +450,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	shadowMap.DrawShadowMap(context,registry,backBufferRTV, depthBufferDSV);
+	shadowMap.DrawShadowMap(context, registry, backBufferRTV, depthBufferDSV);
 
 	context->OMSetRenderTargets(1, postProcess1.ppRTV.GetAddressOf(), depthBufferDSV.Get()); //Setup First Post Processing Target
 	
@@ -506,6 +485,13 @@ void Game::Draw(float deltaTime, float totalTime)
 
 void Game::RenderScene()
 {
+	auto lightView = registry.view<LightComponent>();
+	std::vector<LightComponent> lights = std::vector<LightComponent>();
+	for (auto [entity, light_comp] : lightView.each())
+	{
+		lights.push_back(light_comp);
+	}
+
 	auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>();
 	for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
 	{
@@ -513,7 +499,7 @@ void Game::RenderScene()
 
 		material_comp.material->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
 		material_comp.material->pixelShader->SetSamplerState("ShadowSampler", shadowMap.shadowSampler);
-		material_comp.material->pixelShader->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
+		material_comp.material->pixelShader->SetData("lights", &lights[0], sizeof(LightComponent) * (int)lights.size());
 		
 		material_comp.material->vertexShader->SetMatrix4x4("lightView", shadowMap.shadowViewMatrix);
 		material_comp.material->vertexShader->SetMatrix4x4("lightProjection", shadowMap.shadowProjectionMatrix);
@@ -670,11 +656,15 @@ void Game::BuildUI(float deltaTime, float totalTime)
 
 	if (ImGui::TreeNode("Lights"))
 	{
-		for (int i = 0; i < lights.size(); i++)
-		{
-			std::string string = "Light #" + std::to_string(i+1) + " - ";
+		auto mycompMesh = registry.view<LightComponent>(); // mesh	
 
-			switch (lights[i].Type)
+		int i = 0;
+		for (auto [entity, light_comp] : mycompMesh.each())
+		{
+			i++;
+			std::string string = "Light #" + std::to_string(i) + " - ";
+
+			switch (light_comp.Type)
 			{
 			case LIGHT_TYPE_DIRECTIONAL:
 				string += "Directional";
@@ -689,13 +679,13 @@ void Game::BuildUI(float deltaTime, float totalTime)
 
 			if (ImGui::TreeNode(string.data()))
 			{
-				XMFLOAT3 color = lights[i].Color;
+				XMFLOAT3 color = light_comp.Color;
 				ImGui::DragFloat3("Color", &color.x, 0.005f, 0.f, 1.0f, "%.01f");
-				lights[i].Color = color;
+				light_comp.Color = color;
 
-				float intensity = lights[i].Intensity;
+				float intensity = light_comp.Intensity;
 				ImGui::DragFloat("Intensity", &intensity, 0.005f, 0.0f, 50.0f, "%.3f");
-				lights[i].Intensity = intensity;
+				light_comp.Intensity = intensity;
 
 				ImGui::TreePop();
 			}

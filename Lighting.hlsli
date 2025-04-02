@@ -38,7 +38,8 @@ struct Light
     float Intensity;
     float3 Color;
     float SpotFalloff;
-    float3 Padding;
+    bool isShadowMap;
+    float2 Padding;
 };
 
 cbuffer LightBuffer : register(b1)
@@ -91,8 +92,8 @@ float3 CalcLights(VertexToPixel input, float3 surfaceColor, float3 specularColor
         switch (lights[i].Type)
         {
             case LIGHT_TYPE_DIRECTIONAL:
-                float lightAdditive = DirectionalLight(lights[i], input, surfaceColor, toCam, specularColor, roughness, metalness);
-                if (i == 0)
+                float3 lightAdditive = DirectionalLight(lights[i], input, surfaceColor, toCam, specularColor, roughness, metalness);
+                if (lights[i].isShadowMap)
                 {
                     lightAdditive *= shadowMapShadowAmount;
                 }

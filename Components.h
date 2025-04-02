@@ -83,9 +83,37 @@ struct CameraComponent
 
 };
 
+#define LIGHT_TYPE_DIRECTIONAL 0
+#define LIGHT_TYPE_POINT 1
+#define LIGHT_TYPE_SPOT 2
+
 struct LightComponent
 {
+	LightComponent() : Type(LIGHT_TYPE_DIRECTIONAL), Direction(1, 0, 0), Range(10), Position(0, 0, 0), Intensity(1), Color(1, 1, 1), SpotFalloff(0) { }
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	LightComponent(int _type, DirectX::XMFLOAT3 _direction, float _range, DirectX::XMFLOAT3 _position, float _intensity, DirectX::XMFLOAT3 _color, float _spotFallOff, bool _isShadowMap)
+	{ 
+		Type = _type;
+		Direction = _direction;
+		Range = _range;
+		Position = _position;
+		Intensity = _intensity;
+		Color = _color;
+		SpotFalloff = _spotFallOff;
+		isShadowMap = _isShadowMap;
+	}
 
+	//Data Structure is designed to be sent to the shader
+	//Do Not Change
+	int Type;
+	DirectX::XMFLOAT3 Direction;
+	float Range;
+	DirectX::XMFLOAT3 Position;
+	float Intensity;
+	DirectX::XMFLOAT3 Color;
+	float SpotFalloff;
+	bool isShadowMap;
+	DirectX::XMFLOAT2 Padding;
 };
 
 //struct ScriptComponent

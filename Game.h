@@ -8,7 +8,6 @@
 #include "Camera.h"
 #include "SimpleShader.h"
 #include "Material.h"
-#include "Lights.h"
 #include "Sky.h"
 #include "ShadowMap.h"
 #include "PostProcess.h"
@@ -47,8 +46,6 @@ public:
 	bool randomizeColorOffset = false;
 	int ImGuiMaterialIndex = 0;
 	DirectX::XMFLOAT3 ambientColor = { 0.5f,0.5f,0.5f };
-
-	std::vector<Light> lights = std::vector<Light>();
 
 	std::shared_ptr<Sky> sky;
 

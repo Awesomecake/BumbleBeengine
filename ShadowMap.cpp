@@ -115,8 +115,8 @@ void ShadowMap::DrawShadowMap(Microsoft::WRL::ComPtr<ID3D11DeviceContext> contex
 	shadowMapVertexShader->SetMatrix4x4("projection", shadowProjectionMatrix);
 
 	// Loop and draw all entities
-	auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
-	for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
+	auto meshView = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
+	for (auto [entity, mesh_comp, material_comp, transform_comp] : meshView.each())
 	{
 		shadowMapVertexShader->SetMatrix4x4("world", Systems::CalcWorldMatrix(transform_comp));
 		shadowMapVertexShader->CopyAllBufferData();
