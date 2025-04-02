@@ -110,8 +110,6 @@ private:
 
 	//--------------JoltPhysics----------------
 	PhysicsManager* physicsManager;
-	BodyID sphere1;
-	BodyID sphere2;
 
 	uint step = 0;
 
@@ -119,8 +117,6 @@ private:
 	const float cDeltaTime = 1.0f / 60.0f;
 	float timeSincePhysicsStep = 0.f;
 	bool runPhysics = false;
-
-	//unordered_map<BodyID, GameEntity> bodyObjects;
 
 	entt::registry registry;
 

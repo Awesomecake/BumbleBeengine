@@ -142,26 +142,23 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
 	physicsManager = new PhysicsManager();
-	sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1);
+	BodyID sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1);
 	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
-	sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1);
+	BodyID sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
-	XMFLOAT4 identityQuat;
-	XMStoreFloat4(&identityQuat, DirectX::XMQuaternionIdentity());
 	entt::entity testEntity = registry.create();
-	registry.emplace<TransformComponent>(testEntity, XMFLOAT3(-3, 0, 0));
-	registry.emplace<MeshComponent>(testEntity, cube);
+	registry.emplace<TransformComponent>(testEntity, XMFLOAT3(0, 20, 0));
+	registry.emplace<MeshComponent>(testEntity, sphere);
 	registry.emplace<MaterialComponent>(testEntity, materials[0]);
+	registry.emplace<PhysicsComponent>(testEntity, sphere1);
 
 	entt::entity testEntity2 = registry.create();
-	registry.emplace<TransformComponent>(testEntity2, XMFLOAT3(3,0,0));
+	registry.emplace<TransformComponent>(testEntity2, XMFLOAT3(0,0,0));
 	registry.emplace<MeshComponent>(testEntity2, sphere);
 	registry.emplace<MaterialComponent>(testEntity2, materials[0]);
-
-	//gameEntities.push_back(GameEntity(sphere, materials[0], sphere1));
-	//gameEntities.push_back(GameEntity(sphere, materials[0], sphere2));
+	registry.emplace<PhysicsComponent>(testEntity2, sphere2);
 
 #pragma region Constructing Lights
 	lights = std::vector<Light>();
@@ -301,22 +298,40 @@ void Game::CreateGeometry()
 	torus = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/torus.igme540obj").c_str(), device);
 	quad = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/quad.igme540obj").c_str(), device);
 
-	/*gameEntities.push_back(GameEntity(cube, materials[0]));
-	gameEntities.push_back(GameEntity(cylinder, materials[0]));
-	gameEntities.push_back(GameEntity(helix, materials[0]));
-	gameEntities.push_back(GameEntity(sphere, materials[1]));
-	gameEntities.push_back(GameEntity(torus, materials[1]));
-	gameEntities.push_back(GameEntity(quad, materials[1]));
-	gameEntities.push_back(GameEntity(cube, materials[2]));
+	entt::entity entity1 = registry.create();
+	registry.emplace<TransformComponent>(entity1, XMFLOAT3(-9, -3, 0));
+	registry.emplace<MeshComponent>(entity1, cube);
+	registry.emplace<MaterialComponent>(entity1, materials[0]);
 
-	gameEntities[0].GetTransform().SetPosition(-9, -3, 0);
-	gameEntities[1].GetTransform().SetPosition(-6, -3, 0);
-	gameEntities[2].GetTransform().SetPosition(-3, -3, 0);
-	gameEntities[4].GetTransform().SetPosition(3, -3, 0);
-	gameEntities[5].GetTransform().SetPosition(6, -3, 0);
+	entt::entity entity2 = registry.create();
+	registry.emplace<TransformComponent>(entity2, XMFLOAT3(-6, -3, 0));
+	registry.emplace<MeshComponent>(entity2, cylinder);
+	registry.emplace<MaterialComponent>(entity2, materials[0]);
 
-	gameEntities[6].GetTransform().SetScale(20, 1, 20);
-	gameEntities[6].GetTransform().SetPosition(0, -7, 0 );*/
+	entt::entity entity3 = registry.create();
+	registry.emplace<TransformComponent>(entity3, XMFLOAT3(-3, -3, 0));
+	registry.emplace<MeshComponent>(entity3, helix);
+	registry.emplace<MaterialComponent>(entity3, materials[0]);
+
+	entt::entity entity4 = registry.create();
+	registry.emplace<TransformComponent>(entity4, XMFLOAT3(0, -3, 0));
+	registry.emplace<MeshComponent>(entity4, sphere);
+	registry.emplace<MaterialComponent>(entity4, materials[1]);
+
+	entt::entity entity5 = registry.create();
+	registry.emplace<TransformComponent>(entity5, XMFLOAT3(3, -3, 0));
+	registry.emplace<MeshComponent>(entity5, torus);
+	registry.emplace<MaterialComponent>(entity5, materials[1]);
+
+	entt::entity entity6 = registry.create();
+	registry.emplace<TransformComponent>(entity6, XMFLOAT3(6, -3, 0));
+	registry.emplace<MeshComponent>(entity6, quad);
+	registry.emplace<MaterialComponent>(entity6, materials[1]);
+
+	entt::entity entity7 = registry.create();
+	registry.emplace<TransformComponent>(entity7, XMFLOAT3(0, -7, 0), XMFLOAT3(20, 1, 20));
+	registry.emplace<MeshComponent>(entity7, cube);
+	registry.emplace<MaterialComponent>(entity7, materials[2]);
 }
 
 
@@ -369,61 +384,60 @@ void Game::Update(float deltaTime, float totalTime)
 	
 #pragma region Physics System
 
-	//if (InputManager::KeyPress(VK_DELETE))
-	//{
-	//	int matLocation = rand() % materials.size();
+	if (InputManager::KeyPress(VK_DELETE))
+	{
+		int matLocation = rand() % materials.size();
 
-	//	XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
-	//	XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
+		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
+		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-	//	BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
-	//	physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
-	//	GameEntity entity = GameEntity(sphere, materials[matLocation], id);
-	//	entity.GetTransform().SetScale(0.5, 0.5, 0.5);
-	//	entity.GetTransform().SetPosition(camPos);
-	//	gameEntities.push_back(entity);
-	//	bodyObjects[id] = entity;
-	//}
+		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
+		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
 
-	//if (InputManager::KeyPress(VK_INSERT))
-	//{
-	//	XMFLOAT3 pos = cameras[0]->GetTransform().GetPosition();
-	//	XMFLOAT3 forward = cameras[0]->GetTransform().GetForward();
+		entt::entity shotEntity = registry.create();
+		registry.emplace<TransformComponent>(shotEntity, camPos, XMFLOAT3(0.5, 0.5, 0.5));
+		registry.emplace<MeshComponent>(shotEntity, sphere);
+		registry.emplace<MaterialComponent>(shotEntity, materials[matLocation]);
+		registry.emplace<PhysicsComponent>(shotEntity, id);
+	}
 
-	//	AllHitCollisionCollector<RayCastBodyCollector> collector = physicsManager->JoltRayCast(Vec3(pos.x, pos.y, pos.z), Vec3Arg(forward.x, forward.y, forward.z), 100);
+	if (InputManager::KeyPress(VK_INSERT))
+	{
+		//XMFLOAT3 pos = cameras[0]->GetTransform().GetPosition();
+		//XMFLOAT3 forward = cameras[0]->GetTransform().GetForward();
 
-	//	bool hasHit = collector.HadHit();
+		//AllHitCollisionCollector<RayCastBodyCollector> collector = physicsManager->JoltRayCast(Vec3(pos.x, pos.y, pos.z), Vec3Arg(forward.x, forward.y, forward.z), 100);
 
-	//	if (hasHit)
-	//	{
-	//		for (auto& hitBody : collector.mHits)
-	//		{
-	//			if (bodyObjects.contains(hitBody.mBodyID))
-	//			{
-	//				bodyObjects[hitBody.mBodyID].SetMaterial(materials[1]);
-	//			}
-	//		}
-	//	}
-	//}
-	//
-	//timeSincePhysicsStep += deltaTime;
+		//bool hasHit = collector.HadHit();
 
-	//while (timeSincePhysicsStep >= cDeltaTime && runPhysics)
-	//{
-	//	physicsManager->JoltPhysicsFrame();
-	//	timeSincePhysicsStep -= cDeltaTime;
+		//if (hasHit)
+		//{
+		//	for (auto& hitBody : collector.mHits)
+		//	{
+		//		if (bodyObjects.contains(hitBody.mBodyID))
+		//		{
+		//			bodyObjects[hitBody.mBodyID].SetMaterial(materials[1]);
+		//		}
+		//	}
+		//}
+	}
+	
+	timeSincePhysicsStep += deltaTime;
 
-	//	// Next step
-	//	++step;
+	while (timeSincePhysicsStep >= cDeltaTime && runPhysics)
+	{
+		physicsManager->JoltPhysicsFrame();
+		timeSincePhysicsStep -= cDeltaTime;
 
-	//	for (auto& entity : gameEntities)
-	//	{
-	//		if (entity.GetIsUsingPhysics())
-	//		{
-	//			entity.UpdateTransformFromPhysicsBody(physicsManager);
-	//		}
-	//	}
-	//}
+		// Next step
+		++step;
+
+		auto mycompMesh = registry.view<TransformComponent, PhysicsComponent>();
+		for (auto [entity, transform_comp, physics_comp] : mycompMesh.each())
+		{
+			Systems::UpdateTransformFromPhysicsBody(physicsManager, physics_comp, transform_comp);
+		}
+	}
 
 #pragma endregion
 
@@ -457,7 +471,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	//shadowMap.DrawShadowMap(context,gameEntities,backBufferRTV, depthBufferDSV);
+	//shadowMap.DrawShadowMap(context,registry,backBufferRTV, depthBufferDSV);
 
 	context->OMSetRenderTargets(1, postProcess1.ppRTV.GetAddressOf(), depthBufferDSV.Get()); //Setup First Post Processing Target
 	

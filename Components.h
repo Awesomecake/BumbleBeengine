@@ -3,6 +3,9 @@
 #include "Material.h"
 #include <memory>
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+
 struct MeshComponent
 {
 	std::shared_ptr<Mesh> mesh;
@@ -35,6 +38,12 @@ public:
 		position = pos;
 	}
 
+	TransformComponent(DirectX::XMFLOAT3 pos, DirectX::XMFLOAT3 _scale) : TransformComponent()
+	{
+		position = pos;
+		scale = _scale;
+	}
+
 	const DirectX::XMFLOAT3& GetPosition() const {return position;}
 	const void SetPosition(DirectX::XMFLOAT3 pos) { position = pos; isDirty = true; }
 
@@ -65,6 +74,7 @@ private:
 
 struct PhysicsComponent
 {
+	JPH::BodyID bodyID;
 
 };
 

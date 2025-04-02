@@ -153,7 +153,6 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DXCore.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameEntity.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />
@@ -312,7 +311,6 @@
     <ClCompile Include="SimpleShader.cpp" />
     <ClCompile Include="Sky.cpp" />
     <ClCompile Include="Systems.cpp" />
-    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="TransformEuler.cpp" />
     <ClCompile Include="XInputManager.cpp" />
   </ItemGroup>
@@ -322,7 +320,6 @@
     <ClInclude Include="Components.h" />
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="GameEntity.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
     <ClInclude Include="ImGui\imgui_impl_dx11.h" />
@@ -635,7 +632,6 @@
     <ClInclude Include="SimpleShader.h" />
     <ClInclude Include="Sky.h" />
     <ClInclude Include="Systems.h" />
-    <ClInclude Include="Transform.h" />
     <ClInclude Include="TransformEuler.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="XInputManager.h" />

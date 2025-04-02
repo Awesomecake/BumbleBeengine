@@ -48,3 +48,11 @@ DirectX::XMFLOAT4X4 Systems::CalcWorldInverseTransposeMatrix(TransformComponent&
 }
 #pragma endregion
 
+void Systems::UpdateTransformFromPhysicsBody(PhysicsManager* physicsManager, PhysicsComponent& physics_comp, TransformComponent& transform_comp)
+{
+	RVec3 position = physicsManager->body_interface->GetCenterOfMassPosition(physics_comp.bodyID);
+	JPH::Quat rotation = physicsManager->body_interface->GetRotation(physics_comp.bodyID);
+
+	transform_comp.SetPosition(DirectX::XMFLOAT3(position.GetX(), position.GetY(), position.GetZ()));
+	transform_comp.SetQuaternion(rotation.GetX(), rotation.GetY(), rotation.GetZ(), rotation.GetW());
+}
