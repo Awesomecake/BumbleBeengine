@@ -151,7 +151,10 @@
   <ItemGroup>
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Canvas.cpp" />
+    <ClCompile Include="CanvasObject.cpp" />
     <ClCompile Include="DXCore.cpp" />
+    <ClCompile Include="Emitter.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
@@ -316,8 +319,11 @@
   <ItemGroup>
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Canvas.h" />
+    <ClInclude Include="CanvasObject.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="DXCore.h" />
+    <ClInclude Include="Emitter.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
@@ -630,6 +636,7 @@
     <ClInclude Include="SimpleShader.h" />
     <ClInclude Include="Systems.h" />
     <ClInclude Include="TransformEuler.h" />
+    <ClInclude Include="UI.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="XInputManager.h" />
   </ItemGroup>

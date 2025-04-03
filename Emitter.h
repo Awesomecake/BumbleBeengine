@@ -5,7 +5,7 @@
 #include <memory>
 #include "Material.h"
 #include "Camera.h"
-#include "Transform.h"
+#include "TransformEuler.h"
 #include "SimpleShader.h"
 
 //struct for particle data
@@ -58,7 +58,7 @@ public:
 	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c, std::shared_ptr<Camera> cam);
 
 	//getters
-	Transform& GetTransform();
+	TransformEuler& GetTransform();
 	std::shared_ptr<Material> GetMaterial();
 
 	//setters
@@ -99,7 +99,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 
 	//transform
-	Transform transform;
+	TransformEuler transform;
 
 	//material
 	std::shared_ptr<Material> material;
