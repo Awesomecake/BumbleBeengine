@@ -152,9 +152,9 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
 	physicsManager = new PhysicsManager();
-	BodyID sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1);
+	BodyID sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic);
 	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
-	BodyID sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1);
+	BodyID sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
@@ -276,24 +276,24 @@ void Game::InitializeInputActions()
 
 	InputActionManager::GetAction(L"Shoot").OnTrigger.push_back([&](InputActionManager::InputData data)
 	{
-		if (data.inputType == InputActionManager::InputType::Pressed && (data.controllerIndex == CONTROLLER_1 || data.controllerIndex == NOT_A_CONTROLLER) )
-		{
-			int matLocation = rand() % materials.size();
+		//if (data.inputType == InputActionManager::InputType::Pressed && (data.controllerIndex == CONTROLLER_1 || data.controllerIndex == NOT_A_CONTROLLER) )
+		//{
+		//	int matLocation = rand() % materials.size();
 
-			XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
-			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
+		//	XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
+		//	XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-			BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
-			GameEntity entity = GameEntity(sphere, materials[matLocation], id);
+		//	BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
+		//	GameEntity entity = GameEntity(sphere, materials[matLocation], id);
 
-			entity.GetTransform().SetScale(0.5, 0.5, 0.5);
-			entity.GetTransform().SetPosition(camPos);
+		//	entity.GetTransform().SetScale(0.5, 0.5, 0.5);
+		//	entity.GetTransform().SetPosition(camPos);
 
-			gameEntities.push_back(entity);
-			bodyObjects[id] = entity;
+		//	gameEntities.push_back(entity);
+		//	bodyObjects[id] = entity;
 
-			physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
-		}
+		//	physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+		//}
 	});
 
 }
@@ -425,7 +425,7 @@ void Game::Update(float _deltaTime, float totalTime)
 		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
 		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
+		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
 		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
 
 		entt::entity shotEntity = registry.create();
