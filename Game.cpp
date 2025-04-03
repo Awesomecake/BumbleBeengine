@@ -5,7 +5,6 @@
 #include "Mesh.h"
 #include <string>
 #include "WICTextureLoader.h"
-#include "EnTT/include/entt/entt.hpp"
 
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx11.h"
@@ -122,7 +121,17 @@ void Game::Init()
 
 	CreateGeometry();
 
-	sky = std::make_shared<Sky>(cube, samplerState, device, context, FixPath(L"../../Assets/Skies/Planet/").c_str());
+	entt::entity skyEntity = registry.create();
+	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);
+
+	registry.get<SkyBoxComponent>(skyEntity).SetCubeMapTexture(Systems::CreateCubeMap(device, context,
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"right.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"left.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"up.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"down.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"front.png")).c_str(),
+		(FixPath(L"../../Assets/Skies/Planet/").c_str() + std::wstring(L"back.png")).c_str()
+	));
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -143,80 +152,44 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
 	physicsManager = new PhysicsManager();
-	sphereBody1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic);
-	physicsManager->AddBodyVelocity(sphereBody1, Vec3(0.0f, -5.0f, 0.0f));
-	sphereBody2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic);
-	sphereBody3 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 0.0_r, 0.0_r), 1, EMotionType::Static);
-	cubeBody1 = physicsManager->CreatePhysicsCubeBody(RVec3(0.0_r, 0.0_r, 0.0_r), Vec3(1,1,1), EMotionType::Static);
-
-	//Creating Render-Testing GameObjects
-	{
-		gameEntities.push_back(GameEntity(cube, materials[0]));
-		gameEntities.push_back(GameEntity(cylinder, materials[0]));
-		gameEntities.push_back(GameEntity(helix, materials[0]));
-		gameEntities.push_back(GameEntity(sphere, materials[1]));
-		gameEntities.push_back(GameEntity(torus, materials[1]));
-		gameEntities.push_back(GameEntity(quad, materials[1]));
-		gameEntities.push_back(GameEntity(cube, materials[2]));
-
-		gameEntities[0].GetTransform().SetPosition(-9, -3, 0);
-		physicsManager->SetBodyPosition(cubeBody1, Vec3(-9, -3, 0), EActivation::DontActivate);
-			
-		gameEntities[1].GetTransform().SetPosition(-6, -3, 0);
-		gameEntities[2].GetTransform().SetPosition(-3, -3, 0);
-		gameEntities[4].GetTransform().SetPosition(3, -3, 0);
-		gameEntities[5].GetTransform().SetPosition(6, -3, 0);
-
-		gameEntities[6].GetTransform().SetScale(20, 1, 20);
-		gameEntities[6].GetTransform().SetPosition(0, -7, 0);
-	}
+	BodyID sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1);
+	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
+	BodyID sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
-	gameEntities.push_back(GameEntity(sphere, materials[0], sphereBody1));
-	gameEntities.push_back(GameEntity(sphere, materials[0], sphereBody2));
+	entt::entity testEntity = registry.create();
+	registry.emplace<TransformComponent>(testEntity, XMFLOAT3(0, 20, 0));
+	registry.emplace<MeshComponent>(testEntity, sphere);
+	registry.emplace<MaterialComponent>(testEntity, materials[0]);
+	registry.emplace<PhysicsComponent>(testEntity, sphere1);
+
+	entt::entity testEntity2 = registry.create();
+	registry.emplace<TransformComponent>(testEntity2, XMFLOAT3(0,0,0));
+	registry.emplace<MeshComponent>(testEntity2, sphere);
+	registry.emplace<MaterialComponent>(testEntity2, materials[0]);
+	registry.emplace<PhysicsComponent>(testEntity2, sphere2);
 
 #pragma region Constructing Lights
-	lights = std::vector<Light>();
+	entt::entity light1 = registry.create();
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	registry.emplace<LightComponent>(light1, LIGHT_TYPE_POINT, XMFLOAT3(0, 0, 0), 10, XMFLOAT3(0, 0, 0), 2, XMFLOAT3(1, 0, 0), 0, false);
 
-	Light light3 = Light();
-	light3.Direction = XMFLOAT3(0, -1, -1);
-	light3.Color = XMFLOAT3(1, 1, 1);
+	entt::entity light2 = registry.create();
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	registry.emplace<LightComponent>(light2, LIGHT_TYPE_POINT, XMFLOAT3(0, 0, 0), 10, XMFLOAT3(0, 0, 5), 2, XMFLOAT3(0, 0, 1), 0, false);
 
-	lights.push_back(light3);
+	entt::entity light3 = registry.create();
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	registry.emplace<LightComponent>(light3, LIGHT_TYPE_DIRECTIONAL, XMFLOAT3(0, -1, -1), 0, XMFLOAT3(0, 0, 0), 1, XMFLOAT3(1, 1, 1), 0, true);
 
-	Light light = Light();
-	light.Type = LIGHT_TYPE_POINT;
-	light.Color = XMFLOAT3(1, 0, 0);
-	light.Position = XMFLOAT3(0, 0, 0);
-	light.Range = 10;
-	light.Intensity = 2;
+	entt::entity light4 = registry.create();
+	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
+	registry.emplace<LightComponent>(light4, LIGHT_TYPE_DIRECTIONAL, XMFLOAT3(0, 0, -1), 0, XMFLOAT3(0, 0, 0), 1, XMFLOAT3(0, 1, 1), 0, false);
 
-	lights.push_back(light);
-
-	Light light2 = Light();
-	light2.Type = LIGHT_TYPE_POINT;
-	light2.Color = XMFLOAT3(0, 0, 1);
-	light2.Position = XMFLOAT3(0, 0, 5);
-	light2.Range = 10;
-	light2.Intensity = 2;
-
-	lights.push_back(light2);
-
-	Light light4 = light3;
-	light4.Direction = XMFLOAT3(-1, 0, 0);
-	light4.Color = XMFLOAT3(1, 1, 0);
-
-	lights.push_back(light4);
-
-	Light light5 = light3;
-	light5.Direction = XMFLOAT3(0, 0, -1);
-	light5.Color = XMFLOAT3(0, 1, 1);
-
-	lights.push_back(light5);
 #pragma endregion
 
-	shadowMap.MakeProjection(light3.Direction);
+	shadowMap.MakeProjection(XMFLOAT3(0, -1, -1));
 
 	audioManager = std::make_shared<AudioManager>();
 	InitializeInputActions();
@@ -360,6 +333,41 @@ void Game::CreateGeometry()
 	sphere = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/sphere.igme540obj").c_str(), device);
 	torus = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/torus.igme540obj").c_str(), device);
 	quad = std::make_shared<Mesh>(FixPath(L"../../Assets/Models/quad.igme540obj").c_str(), device);
+
+	entt::entity entity1 = registry.create();
+	registry.emplace<TransformComponent>(entity1, XMFLOAT3(-9, -3, 0));
+	registry.emplace<MeshComponent>(entity1, cube);
+	registry.emplace<MaterialComponent>(entity1, materials[0]);
+
+	entt::entity entity2 = registry.create();
+	registry.emplace<TransformComponent>(entity2, XMFLOAT3(-6, -3, 0));
+	registry.emplace<MeshComponent>(entity2, cylinder);
+	registry.emplace<MaterialComponent>(entity2, materials[0]);
+
+	entt::entity entity3 = registry.create();
+	registry.emplace<TransformComponent>(entity3, XMFLOAT3(-3, -3, 0));
+	registry.emplace<MeshComponent>(entity3, helix);
+	registry.emplace<MaterialComponent>(entity3, materials[0]);
+
+	entt::entity entity4 = registry.create();
+	registry.emplace<TransformComponent>(entity4, XMFLOAT3(0, -3, 0));
+	registry.emplace<MeshComponent>(entity4, sphere);
+	registry.emplace<MaterialComponent>(entity4, materials[1]);
+
+	entt::entity entity5 = registry.create();
+	registry.emplace<TransformComponent>(entity5, XMFLOAT3(3, -3, 0));
+	registry.emplace<MeshComponent>(entity5, torus);
+	registry.emplace<MaterialComponent>(entity5, materials[1]);
+
+	entt::entity entity6 = registry.create();
+	registry.emplace<TransformComponent>(entity6, XMFLOAT3(6, -3, 0));
+	registry.emplace<MeshComponent>(entity6, quad);
+	registry.emplace<MaterialComponent>(entity6, materials[1]);
+
+	entt::entity entity7 = registry.create();
+	registry.emplace<TransformComponent>(entity7, XMFLOAT3(0, -7, 0), XMFLOAT3(20, 1, 20));
+	registry.emplace<MeshComponent>(entity7, cube);
+	registry.emplace<MaterialComponent>(entity7, materials[2]);
 }
 
 
@@ -407,36 +415,48 @@ void Game::Update(float _deltaTime, float totalTime)
 
 	mouseX = (InputManager::GetMouseX() / (float) windowWidth);
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
-
-	gameEntities[3].GetTransform().SetPosition(3 * cos(totalTime), -3, 3 * sin(totalTime));
-	physicsManager->SetBodyPosition(sphereBody3, Vec3(3 * cos(totalTime), -3, 3 * sin(totalTime)), JPH::EActivation::DontActivate);
 	
-	gameEntities[0].GetTransform().Rotate(deltaTime, 0, deltaTime);
-	XMFLOAT4 quat = gameEntities[0].GetTransform().GetRotation();
-	physicsManager->SetBodyRotation(cubeBody1, Quat(quat.x,quat.y,quat.z,quat.w).Normalized(), JPH::EActivation::DontActivate);
+#pragma region Physics System
+
+	if (InputManager::KeyPress(VK_DELETE))
+	{
+		int matLocation = rand() % materials.size();
+
+		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
+		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
+
+		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5);
+		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+
+		entt::entity shotEntity = registry.create();
+		registry.emplace<TransformComponent>(shotEntity, camPos, XMFLOAT3(0.5, 0.5, 0.5));
+		registry.emplace<MeshComponent>(shotEntity, sphere);
+		registry.emplace<MaterialComponent>(shotEntity, materials[matLocation]);
+		registry.emplace<PhysicsComponent>(shotEntity, id);
+	}
 
 	if (InputManager::KeyPress(VK_INSERT))
 	{
-		XMFLOAT3 pos = cameras[0]->GetTransform().GetPosition();
-		XMFLOAT3 forward = cameras[0]->GetTransform().GetForward();
+		//XMFLOAT3 pos = cameras[0]->GetTransform().GetPosition();
+		//XMFLOAT3 forward = cameras[0]->GetTransform().GetForward();
 
-		AllHitCollisionCollector<RayCastBodyCollector> collector = physicsManager->JoltRayCast(Vec3(pos.x, pos.y, pos.z), Vec3Arg(forward.x, forward.y, forward.z), 100);
+		//AllHitCollisionCollector<RayCastBodyCollector> collector = physicsManager->JoltRayCast(Vec3(pos.x, pos.y, pos.z), Vec3Arg(forward.x, forward.y, forward.z), 100);
 
-		bool hasHit = collector.HadHit();
+		//bool hasHit = collector.HadHit();
 
-		if (hasHit)
-		{
-			for (auto& hitBody : collector.mHits)
-			{
-				if (bodyObjects.contains(hitBody.mBodyID))
-				{
-					bodyObjects[hitBody.mBodyID].SetMaterial(materials[1]);
-				}
-			}
-		}
+		//if (hasHit)
+		//{
+		//	for (auto& hitBody : collector.mHits)
+		//	{
+		//		if (bodyObjects.contains(hitBody.mBodyID))
+		//		{
+		//			bodyObjects[hitBody.mBodyID].SetMaterial(materials[1]);
+		//		}
+		//	}
+		//}
 	}
-
-	timeSincePhysicsStep += _deltaTime;
+	
+	timeSincePhysicsStep += deltaTime;
 
 	while (timeSincePhysicsStep >= cDeltaTime && runPhysics)
 	{
@@ -446,15 +466,21 @@ void Game::Update(float _deltaTime, float totalTime)
 		// Next step
 		++step;
 
-		for (auto& entity : gameEntities)
+		auto mycompMesh = registry.view<TransformComponent, PhysicsComponent>();
+		for (auto [entity, transform_comp, physics_comp] : mycompMesh.each())
 		{
-			if (entity.GetIsUsingPhysics())
-			{
-				entity.UpdateTransformFromPhysicsBody(physicsManager);
-			}
+			Systems::UpdateTransformFromPhysicsBody(physicsManager, physics_comp, transform_comp);
 		}
 	}
-	audioManager->update_audio(_deltaTime);
+
+#pragma endregion
+
+#pragma region Audio handling
+
+	audioManager->update_audio(deltaTime);
+
+#pragma endregion
+
 }
 
 // --------------------------------------------------------
@@ -479,7 +505,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		context->ClearDepthStencilView(depthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	shadowMap.DrawShadowMap(context,gameEntities,backBufferRTV, depthBufferDSV);
+	shadowMap.DrawShadowMap(context, registry, backBufferRTV, depthBufferDSV);
 
 	context->OMSetRenderTargets(1, postProcess1.ppRTV.GetAddressOf(), depthBufferDSV.Get()); //Setup First Post Processing Target
 	
@@ -491,7 +517,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	postProcess3.RenderPostProcess(context, backBufferRTV, 0);
 	//postProcess4.RenderPostProcess(context, backBufferRTV, 0);
 
-	ImGui::Render(); // Turns this frame’s UI into renderable triangles
+	ImGui::Render(); // Turns this frameï¿½s UI into renderable triangles
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
 
 	// Frame END
@@ -514,20 +540,55 @@ void Game::Draw(float deltaTime, float totalTime)
 
 void Game::RenderScene()
 {
-	for (GameEntity entity : gameEntities)
+	auto lightView = registry.view<LightComponent>();
+	std::vector<LightComponent> lights = std::vector<LightComponent>();
+	for (auto [entity, light_comp] : lightView.each()) { lights.push_back(light_comp); }
+
+	auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>();
+	for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
 	{
-		entity.GetMaterial()->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
-		entity.GetMaterial()->pixelShader->SetSamplerState("ShadowSampler", shadowMap.shadowSampler);
-		entity.GetMaterial()->pixelShader->SetData("lights", &lights[0], sizeof(Light) * (int)lights.size());
+		material_comp.material->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
 
-		entity.GetMaterial()->vertexShader->SetMatrix4x4("lightView", shadowMap.shadowViewMatrix);
-		entity.GetMaterial()->vertexShader->SetMatrix4x4("lightProjection", shadowMap.shadowProjectionMatrix);
+		material_comp.material->pixelShader->SetShaderResourceView("ShadowMap", shadowMap.shadowSRV.Get());
+		material_comp.material->pixelShader->SetSamplerState("ShadowSampler", shadowMap.shadowSampler);
+		material_comp.material->pixelShader->SetData("lights", &lights[0], sizeof(LightComponent) * (int)lights.size());
+		
+		material_comp.material->vertexShader->SetMatrix4x4("lightView", shadowMap.shadowViewMatrix);
+		material_comp.material->vertexShader->SetMatrix4x4("lightProjection", shadowMap.shadowProjectionMatrix);
 
-		entity.Draw(context, cameras[selectedCamera]);
+		{
+			DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2((float)InputManager::GetMouseX(), (float)InputManager::GetMouseY());
+			material_comp.material->PrepareMaterial();
+
+			//Set Pixel Shader and Load Data
+			material_comp.material->pixelShader->SetFloat4("surfaceColor", material_comp.material->surfaceColor);
+			material_comp.material->pixelShader->SetFloat2("mousePos", mousePos);
+			material_comp.material->pixelShader->SetFloat("roughness", material_comp.material->roughness);
+			material_comp.material->pixelShader->SetFloat3("cameraPos", cameras[selectedCamera]->GetTransform().GetPosition());
+
+			material_comp.material->pixelShader->CopyAllBufferData();
+
+			//Set Vertex Shader and Load Data
+			material_comp.material->vertexShader->SetMatrix4x4("world", Systems::CalcWorldMatrix(transform_comp));
+			material_comp.material->vertexShader->SetMatrix4x4("view", cameras[selectedCamera]->GetViewMatrix());
+			material_comp.material->vertexShader->SetMatrix4x4("projection", cameras[selectedCamera]->GetProjectionMatrix());
+			material_comp.material->vertexShader->SetMatrix4x4("worldInvTranspose", Systems::CalcWorldInverseTransposeMatrix(transform_comp));
+
+			material_comp.material->vertexShader->CopyAllBufferData();
+
+			mesh_comp.mesh->Draw(context);
+		}
 	}
 
-	sky->ambient = ambientColor;
-	sky->Draw(context, cameras[selectedCamera]);
+	auto skyboxview = registry.view<SkyBoxComponent>();
+	for (auto [entity, skyBox_comp] : skyboxview.each())
+	{
+		if (skyBox_comp.isUsed)
+		{
+			skyBox_comp.ambient = ambientColor;
+			Systems::DrawSkyBox(context, cameras[selectedCamera], skyBox_comp);
+		}
+	}
 }
 
 #pragma region ImGui
@@ -592,22 +653,23 @@ void Game::BuildUI(float deltaTime, float totalTime)
 
 	if (ImGui::TreeNode("Scene Entities"))
 	{
-		for (int i = 0; i < gameEntities.size(); i++)
+		auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
+
+		int i = 0;
+		for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
 		{
+			i++;
+
 			std::string string = "Entity " + std::to_string(i);
 			if (ImGui::TreeNode(string.data()))
 			{
-				XMFLOAT3 position = gameEntities[i].GetTransform().GetPosition();
+				XMFLOAT3 position = transform_comp.GetPosition();
 				ImGui::DragFloat3("Position", &position.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				gameEntities[i].GetTransform().SetPosition(position);
+				transform_comp.SetPosition(position);
 
-				//XMFLOAT3 rotation = gameEntities[i].GetTransform().GetPitchYawRoll();
-				//ImGui::DragFloat3("Rotation (Radians)", &rotation.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				//gameEntities[i].GetTransform().SetRotation(rotation);
-
-				XMFLOAT3 scale = gameEntities[i].GetTransform().GetScale();
+				XMFLOAT3 scale = transform_comp.GetScale();
 				ImGui::DragFloat3("Scale", &scale.x, 0.005f, -5.0f, 5.0f, "%.3f");
-				gameEntities[i].GetTransform().SetScale(scale);
+				transform_comp.SetScale(scale);
 
 				ImGui::TreePop();
 			}
@@ -653,11 +715,15 @@ void Game::BuildUI(float deltaTime, float totalTime)
 
 	if (ImGui::TreeNode("Lights"))
 	{
-		for (int i = 0; i < lights.size(); i++)
-		{
-			std::string string = "Light #" + std::to_string(i+1) + " - ";
+		auto mycompMesh = registry.view<LightComponent>(); // mesh	
 
-			switch (lights[i].Type)
+		int i = 0;
+		for (auto [entity, light_comp] : mycompMesh.each())
+		{
+			i++;
+			std::string string = "Light #" + std::to_string(i) + " - ";
+
+			switch (light_comp.Type)
 			{
 			case LIGHT_TYPE_DIRECTIONAL:
 				string += "Directional";
@@ -672,13 +738,13 @@ void Game::BuildUI(float deltaTime, float totalTime)
 
 			if (ImGui::TreeNode(string.data()))
 			{
-				XMFLOAT3 color = lights[i].Color;
+				XMFLOAT3 color = light_comp.Color;
 				ImGui::DragFloat3("Color", &color.x, 0.005f, 0.f, 1.0f, "%.01f");
-				lights[i].Color = color;
+				light_comp.Color = color;
 
-				float intensity = lights[i].Intensity;
+				float intensity = light_comp.Intensity;
 				ImGui::DragFloat("Intensity", &intensity, 0.005f, 0.0f, 50.0f, "%.3f");
-				lights[i].Intensity = intensity;
+				light_comp.Intensity = intensity;
 
 				ImGui::TreePop();
 			}
@@ -690,10 +756,13 @@ void Game::BuildUI(float deltaTime, float totalTime)
 	{
 		if (ImGui::Button("Cycle Texture"))
 		{
-			for (int i = 0; i < gameEntities.size(); i++)
+			auto mycompMesh = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
+
+			int i = 0;
+			for (auto [entity, mesh_comp, material_comp, transform_comp] : mycompMesh.each())
 			{
 				ImGuiMaterialIndex++;
-				gameEntities[i].SetMaterial(materials[ImGuiMaterialIndex % materials.size()]);
+				material_comp.material = materials[ImGuiMaterialIndex % materials.size()];
 			}
 		}
 

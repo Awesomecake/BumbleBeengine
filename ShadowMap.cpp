@@ -94,7 +94,7 @@ void ShadowMap::MakeProjection(XMFLOAT3 direction)
 	XMStoreFloat4x4(&shadowProjectionMatrix, lightProjection);
 }
 
-void ShadowMap::DrawShadowMap(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::vector<GameEntity> gameEntities, Microsoft::WRL::ComPtr<ID3D11RenderTargetView> backBufferRTV, Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthBufferDSV)
+void ShadowMap::DrawShadowMap(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, entt::registry& registry, Microsoft::WRL::ComPtr<ID3D11RenderTargetView> backBufferRTV, Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthBufferDSV)
 {
 	context->ClearDepthStencilView(shadowDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -115,14 +115,15 @@ void ShadowMap::DrawShadowMap(Microsoft::WRL::ComPtr<ID3D11DeviceContext> contex
 	shadowMapVertexShader->SetMatrix4x4("projection", shadowProjectionMatrix);
 
 	// Loop and draw all entities
-	for (GameEntity entity : gameEntities)
+	auto meshView = registry.view<MeshComponent, MaterialComponent, TransformComponent>(); // mesh	
+	for (auto [entity, mesh_comp, material_comp, transform_comp] : meshView.each())
 	{
-		shadowMapVertexShader->SetMatrix4x4("world", entity.GetTransform().GetWorldMatrix());
+		shadowMapVertexShader->SetMatrix4x4("world", Systems::CalcWorldMatrix(transform_comp));
 		shadowMapVertexShader->CopyAllBufferData();
 
 		// Draw the mesh directly to avoid the entity's material
 		// Note: Your code may differ significantly here!
-		entity.GetMesh()->Draw(context);
+		mesh_comp.mesh->Draw(context);
 	}
 
 	context->RSSetState(0);

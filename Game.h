@@ -5,12 +5,9 @@
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
 
 #include "Mesh.h"
-#include "GameEntity.h"
 #include "Camera.h"
 #include "SimpleShader.h"
 #include "Material.h"
-#include "Lights.h"
-#include "Sky.h"
 #include "ShadowMap.h"
 #include "PostProcess.h"
 #include "AudioManager.h"
@@ -18,6 +15,9 @@
 #include "PhysicsManager.h"
 #include "XInputManager.h"
 
+#include "EnTT/include/entt/entt.hpp"
+#include "Components.h"
+#include "Systems.h"
 
 #include <memory>
 #include <vector>
@@ -45,11 +45,6 @@ public:
 	bool randomizeColorOffset = false;
 	int ImGuiMaterialIndex = 0;
 	DirectX::XMFLOAT3 ambientColor = { 0.5f,0.5f,0.5f };
-
-	std::vector<GameEntity> gameEntities;
-	std::vector<Light> lights = std::vector<Light>();
-
-	std::shared_ptr<Sky> sky;
 
 	//Camera
 	std::vector<std::shared_ptr<Camera>> cameras;
@@ -111,10 +106,6 @@ private:
 
 	//--------------JoltPhysics----------------
 	PhysicsManager* physicsManager;
-	BodyID sphereBody1;
-	BodyID sphereBody2;
-	BodyID sphereBody3;
-	BodyID cubeBody1;
 
 	uint step = 0;
 
@@ -123,7 +114,7 @@ private:
 	float timeSincePhysicsStep = 0.f;
 	bool runPhysics = true;
 
-	unordered_map<BodyID, GameEntity> bodyObjects;
+	entt::registry registry;
 
 };
 

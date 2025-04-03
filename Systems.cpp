@@ -1,54 +1,96 @@
-#include "Sky.h"
-#include <WICTextureLoader.h>
-#include "PathHelpers.h"
+#include "Systems.h"
 
-Sky::Sky(
-	std::shared_ptr<Mesh> _mesh, 
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> _sampleState, 
-	Microsoft::WRL::ComPtr<ID3D11Device> device, 
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, 
-	std::wstring cubeMapFilePath)
+#pragma region TransformLogic
+DirectX::XMFLOAT4X4	Systems::CalcWorldMatrix(TransformComponent& transform_comp)
 {
-	sampleState = _sampleState;
-	mesh = _mesh;
+	if (transform_comp.IsDirty())
+	{
+		//Get Values
+		DirectX::XMFLOAT3 pos = transform_comp.GetPosition();
+		DirectX::XMFLOAT3 scale = transform_comp.GetScale();
+		DirectX::XMFLOAT4 quaternion = transform_comp.GetQuaternion();
 
-	cubeMapTexture = CreateCubemap(
-		device,
-		context,
-		(cubeMapFilePath + std::wstring(L"right.png")).c_str(),
-		(cubeMapFilePath + std::wstring(L"left.png")).c_str(),
-		(cubeMapFilePath + std::wstring(L"up.png")).c_str(),
-		(cubeMapFilePath + std::wstring(L"down.png")).c_str(),
-		(cubeMapFilePath + std::wstring(L"front.png")).c_str(),
-		(cubeMapFilePath + std::wstring(L"back.png")).c_str()
-	);
+		//Calculate Matrices
+		DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) *
+			DirectX::XMMatrixRotationQuaternion(quat) * 
+			DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 
-	D3D11_RASTERIZER_DESC rasterizerDescription = {};
-	rasterizerDescription.FillMode = D3D11_FILL_SOLID;
-	rasterizerDescription.CullMode = D3D11_CULL_FRONT;
-	device->CreateRasterizerState(&rasterizerDescription, &rasterizerState);
+		XMStoreFloat4x4(&transform_comp.worldMatrix, world);
+		XMStoreFloat4x4(&transform_comp.worldInverseTransposeMatrix, XMMatrixInverse(0, XMMatrixTranspose(world)));
+		transform_comp.SetIsDirty(false);
+	}
 
-	D3D11_DEPTH_STENCIL_DESC stencilDescription = {};
-	stencilDescription.DepthEnable = true;
-	stencilDescription.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-	device->CreateDepthStencilState(&stencilDescription, &stencilState);
-
-	ps = std::make_shared<SimplePixelShader>(device, context, FixPath(L"SkyPixelShader.cso").c_str());
-	vs = std::make_shared<SimpleVertexShader>(device, context, FixPath(L"SkyVertexShader.cso").c_str());
+	return transform_comp.worldMatrix;
 }
 
-Sky::~Sky()
+DirectX::XMFLOAT4X4 Systems::CalcWorldInverseTransposeMatrix(TransformComponent& transform_comp)
 {
+	if (transform_comp.IsDirty())
+	{
+		//Get Values
+		DirectX::XMFLOAT3 pos = transform_comp.GetPosition();
+		DirectX::XMFLOAT3 scale = transform_comp.GetScale();
+		DirectX::XMFLOAT4 quaternion = transform_comp.GetQuaternion();
 
+		//Calculate Matrices
+		DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+		DirectX::XMMATRIX world = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z) * 
+			DirectX::XMMatrixRotationQuaternion(quat) * 
+			DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
+		
+		XMStoreFloat4x4(&transform_comp.worldMatrix, world);
+		XMStoreFloat4x4(&transform_comp.worldInverseTransposeMatrix, XMMatrixInverse(0, XMMatrixTranspose(world)));
+		transform_comp.SetIsDirty(false);
+	}
+
+	return transform_comp.worldInverseTransposeMatrix;
+}
+#pragma endregion
+
+#pragma region PhysicsLogic
+void Systems::UpdateTransformFromPhysicsBody(PhysicsManager* physicsManager, PhysicsComponent& physics_comp, TransformComponent& transform_comp)
+{
+	RVec3 position = physicsManager->body_interface->GetCenterOfMassPosition(physics_comp.bodyID);
+	JPH::Quat rotation = physicsManager->body_interface->GetRotation(physics_comp.bodyID);
+
+	transform_comp.SetPosition(DirectX::XMFLOAT3(position.GetX(), position.GetY(), position.GetZ()));
+	transform_comp.SetQuaternion(rotation.GetX(), rotation.GetY(), rotation.GetZ(), rotation.GetW());
+}
+#pragma endregion
+
+void Systems::DrawSkyBox(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera, SkyBoxComponent skybox_comp)
+{
+	context->RSSetState(skybox_comp.GetRasterizerState().Get());
+	context->OMSetDepthStencilState(skybox_comp.GetStencilState().Get(), 0);
+
+	std::shared_ptr<SimplePixelShader> ps = skybox_comp.GetPixelShader();
+	std::shared_ptr<SimpleVertexShader> vs = skybox_comp.GetVertexShader();
+
+	vs->SetShader();
+	vs->SetMatrix4x4("view", camera->GetViewMatrix());
+	vs->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+	vs->CopyAllBufferData();
+
+	ps->SetShader();
+	ps->SetSamplerState("SkyBoxSampler", skybox_comp.GetSampleState());
+	ps->SetShaderResourceView("cubeMap", skybox_comp.GetCubeMapTexture());
+	ps->SetFloat3("ambient", skybox_comp.ambient);
+	ps->CopyAllBufferData();
+
+	skybox_comp.GetMesh()->Draw(context);
+
+	context->RSSetState(nullptr);
+	context->OMSetDepthStencilState(0, 0);
 }
 
 // --------------------------------------------------------
-// Loads six individual textures (the six faces of a cube map), then
-// creates a blank cube map and copies each of the six textures to
-// another face.  Afterwards, creates a shader resource view for
-// the cube map and cleans up all of the temporary resources.
-// --------------------------------------------------------
-Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Sky::CreateCubemap(
+	// Loads six individual textures (the six faces of a cube map), then
+	// creates a blank cube map and copies each of the six textures to
+	// another face.  Afterwards, creates a shader resource view for
+	// the cube map and cleans up all of the temporary resources.
+	// --------------------------------------------------------
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Systems::CreateCubeMap(
 	Microsoft::WRL::ComPtr<ID3D11Device> device,
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context,
 	const wchar_t* right,
@@ -131,26 +173,4 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Sky::CreateCubemap(
 
 	// Send back the SRV, which is what we need for our shaders
 	return cubeSRV;
-}
-
-void Sky::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera)
-{
-	context->RSSetState(rasterizerState.Get());
-	context->OMSetDepthStencilState(stencilState.Get(), 0);
-
-	vs->SetShader();
-	vs->SetMatrix4x4("view", camera->GetViewMatrix());
-	vs->SetMatrix4x4("projection", camera->GetProjectionMatrix());
-	vs->CopyAllBufferData();
-
-	ps->SetShader();
-	ps->SetSamplerState("SkyBoxSampler", sampleState);
-	ps->SetShaderResourceView("cubeMap", cubeMapTexture);
-	ps->SetFloat3("ambient", ambient);
-	ps->CopyAllBufferData();
-
-	mesh->Draw(context);
-
-	context->RSSetState(nullptr);
-	context->OMSetDepthStencilState(0, 0);
 }
