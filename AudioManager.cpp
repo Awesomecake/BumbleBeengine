@@ -1,4 +1,5 @@
 #include "AudioManager.h"
+//using namespace Input;
 
 XAudioVoice AudioManager::voiceArr[MAX_CONCURRENT_SOUNDS];
 
@@ -22,6 +23,17 @@ AudioManager::~AudioManager()
 		{
 			voice->voice->Stop();
 			voice->voice->FlushSourceBuffers();
+		}
+	}
+
+	// Delete every sound in the cache
+	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
+	{
+		Sound* currentSound = cachedSounds[idx];
+		if (currentSound != nullptr)
+		{
+			cachedSounds[idx]->FreeSoundData();
+			delete cachedSounds[idx];
 		}
 	}
 
@@ -63,12 +75,28 @@ void AudioManager::playSound(const char filePath[MAX_SOUND_PATH_LENGTH])
 		return;
 	}
 
+	// Look through the cache for a sound with the same file name
+	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
+	{
+		// If the sound is found, play that sound and return early.
+		Sound* currentSound = cachedSounds[idx];
+		if (currentSound != nullptr && currentSound->GetFileName() == filePath)
+		{
+			chosenVoice->SubmitSourceBuffer(cachedSounds[idx]->GetBuffer());
+			chosenVoice->Start(0);
+			return;
+		}
+	}
+
 	// Create a new Sound struct
 	Sound* newSound = create_sound(filePath);
 
 	// Play the sound effect
 	chosenVoice->SubmitSourceBuffer(newSound->GetBuffer());
 	chosenVoice->Start(0);
+
+	// Add the sound to the cache
+	cache_sound(newSound);
 }
 
 bool AudioManager::init()
@@ -120,6 +148,11 @@ bool AudioManager::init()
 		}
 	}
 
+	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
+	{
+		cachedSounds[idx] = nullptr;
+	}
+
 	// Everything has been set up successfully, return true
 	return true;
 }
@@ -127,22 +160,45 @@ bool AudioManager::init()
 void AudioManager::update_audio(float dt)
 {
 	// Until update_audio has anything better to do, have it play funny sounds when different keys are pressed
-	//if (Input::KeyPress('1')) 
-	//	playSound("Sounds/vine-boom.wav");
-	//if (Input::KeyPress('2'))
-	//	playSound("Sounds/amongus-roundstart.wav");
-	//if (Input::KeyPress('3'))
-	//	playSound("Sounds/metal-pipe.wav");
-	//if (Input::KeyPress('4'))
-	//	playSound("Sounds/oof.wav");
-	//if (Input::KeyPress('5'))
-	//	playSound("Sounds/ping.wav");
-	//if (Input::KeyPress('6'))
-	//	playSound("Sounds/yippee-tbh.wav");
-	//if (Input::KeyPress('7'))
-	//	playSound("Sounds/yahoo.wav");
-	//if (Input::KeyPress('8'))
-	//	playSound("Sounds/baka-mitai.wav");
+}
+
+void AudioManager::cache_sound(Sound* sound)
+{
+	int openCacheIdx = -1;
+	// Look for an open sound in the cache
+	for (int i = 0; i < MAX_CACHED_SOUNDS; i++)
+	{
+		Sound* currentSound = cachedSounds[i];
+
+		// If the current spot in the cache is nullptr, that spot is guaranteed to be open.
+		// Add the sound to the cache and return instantly
+		if (currentSound == nullptr)
+		{
+			cachedSounds[i] = sound;
+			cachedSounds[i]->inCache = true;
+			return;
+		}
+
+		// If the current sound in the cache isn't being played by any voices, it's idle.
+		// Set openCacheIndex to that value, but continue the loop in case an empty spot 
+		// in the cache is found.
+		if (openCacheIdx < 0 && currentSound->numOfPlayingVoices == 0)
+			openCacheIdx = i;
+	}
+
+	// If an idle sound is in the cache, overwrite it with the provided sound.
+	if (openCacheIdx >= 0)
+	{
+		//std::cout << "Overwrote " << cachedSounds[openCacheIdx]->fileName << " at idx " << openCacheIdx << " with " << sound->fileName << std::endl;
+		cachedSounds[openCacheIdx]->FreeSoundData();
+		delete cachedSounds[openCacheIdx];
+		cachedSounds[openCacheIdx] = sound;
+		cachedSounds[openCacheIdx]->inCache = true;
+	}
+
+	// If there are no open spots in the cache, print a message.
+	else
+		std::cout << "The cache is full. This sound will not be cached." << std::endl;
 }
 
 HRESULT AudioManager::FindChunk(HANDLE hFile, DWORD fourcc, DWORD& dwChunkSize, DWORD& dwChunkDataPosition)
