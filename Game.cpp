@@ -16,6 +16,8 @@
 
 #define PBR_Assets L"../../Assets/PBR/"
 
+#define Sprite_Assets L"../../Assets/SpriteSheets/"
+
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -113,13 +115,16 @@ void Game::Init()
 	postProcess4.pixelShaderFloatData.insert({ "mouseY", &mouseY });
 
 	shadowMap = ShadowMap(device, shadowMapVertexShader, windowWidth, windowHeight);
-
 	CreateMaterial(PBR_Assets "floor_albedo.png", PBR_Assets "floor_normals.png", PBR_Assets "floor_roughness.png", PBR_Assets "floor_metal.png");
 	CreateMaterial(PBR_Assets "bronze_albedo.png", PBR_Assets "bronze_normals.png", PBR_Assets "bronze_roughness.png", PBR_Assets "bronze_metal.png");
 	CreateMaterial(PBR_Assets "cobblestone_albedo.png", PBR_Assets "cobblestone_normals.png", PBR_Assets "cobblestone_roughness.png", PBR_Assets "cobblestone_metalness.png");
 	CreateMaterial(PBR_Assets "scratched_albedo.png", PBR_Assets "scratched_normals.png", PBR_Assets "scratched_roughness.png", PBR_Assets "scratched_metal.png");
 
+	std::shared_ptr<Material> spriteMat = CreateMaterial(Sprite_Assets "scythe_anims-Sheet.png", Sprite_Assets "scythe_anims-Sheet.png", Sprite_Assets "scythe_anims-Sheet.png", Sprite_Assets "scythe_anims-Sheet.png");
+	
 	CreateGeometry();
+
+	testSprite = std::make_shared<Sprite>(quad, spriteMat);
 
 	entt::entity skyEntity = registry.create();
 	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);
@@ -299,7 +304,7 @@ void Game::InitializeInputActions()
 
 }
 
-void Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile)
+std::shared_ptr<Material> Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile)
 {
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalsSRV;
@@ -320,6 +325,7 @@ void Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std:
 	mat->PrepareMaterial();
 
 	materials.push_back(mat);
+	return mat;
 }
 
 
@@ -580,6 +586,10 @@ void Game::RenderScene()
 			mesh_comp.mesh->Draw(context);
 		}
 	}
+
+	//test sprite render
+
+	testSprite->Draw(context, cameras[selectedCamera]);
 
 	auto skyboxview = registry.view<SkyBoxComponent>();
 	for (auto [entity, skyBox_comp] : skyboxview.each())
