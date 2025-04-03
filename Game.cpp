@@ -276,24 +276,25 @@ void Game::InitializeInputActions()
 
 	InputActionManager::GetAction(L"Shoot").OnTrigger.push_back([&](InputActionManager::InputData data)
 	{
-		//if (data.inputType == InputActionManager::InputType::Pressed && (data.controllerIndex == CONTROLLER_1 || data.controllerIndex == NOT_A_CONTROLLER) )
-		//{
-		//	int matLocation = rand() % materials.size();
+		if (data.inputType == InputActionManager::InputType::Pressed && (data.controllerIndex == CONTROLLER_1 || data.controllerIndex == NOT_A_CONTROLLER) )
+		{
+			int matLocation = rand() % materials.size();
 
-		//	XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
-		//	XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
+			XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
+			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-		//	BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
-		//	GameEntity entity = GameEntity(sphere, materials[matLocation], id);
+			BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
 
-		//	entity.GetTransform().SetScale(0.5, 0.5, 0.5);
-		//	entity.GetTransform().SetPosition(camPos);
+			entt::entity entity = registry.create();
+			registry.emplace<TransformComponent>(entity, camPos);
+			registry.emplace<MeshComponent>(entity, sphere);
+			registry.emplace<MaterialComponent>(entity, materials[matLocation]);
+			registry.emplace<PhysicsComponent>(entity, id);
 
-		//	gameEntities.push_back(entity);
-		//	bodyObjects[id] = entity;
+			registry.get<TransformComponent>(entity).SetScale(DirectX::XMFLOAT3(0.5, 0.5, 0.5));
 
-		//	physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
-		//}
+			physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+		}
 	});
 
 }
