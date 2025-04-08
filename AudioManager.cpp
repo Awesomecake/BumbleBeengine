@@ -3,6 +3,13 @@
 
 XAudioVoice AudioManager::voiceArr[MAX_CONCURRENT_SOUNDS];
 
+AudioManager* AudioManager::GetInstance()
+{
+	if (instance == nullptr)
+		instance = new AudioManager();
+	return instance;
+}
+
 AudioManager::AudioManager()
 {
 	bool initSuccess = init();

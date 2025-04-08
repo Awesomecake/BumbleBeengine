@@ -134,6 +134,7 @@ public:
 	}
 
 	friend class XAudioVoice;
+	friend class Audio;
 	friend class AudioManager;
 };
 
@@ -178,22 +179,81 @@ public:
 	void OnVoiceError(void* pBufferContext, HRESULT error) noexcept {}
 };
 
+/// <summary>
+/// The Audio struct, which is essentially a hybrid of the prior
+/// XAudioVoice and some of the audio playing logic from AudioManager.
+/// </summary>
+struct Audio : IXAudio2VoiceCallback
+{
+public:
+	bool playing = false;
+	IXAudio2SourceVoice* voice;
+	Sound sound;
+
+	Audio(const char filePath[MAX_SOUND_PATH_LENGTH])
+	{
+		AudioManager* audioManager = AudioManager::GetInstance();
+		audioManager->xAudio2
+	}
+
+	void OnStreamEnd() noexcept
+	{
+		voice->Stop();
+		playing = false;
+	}
+
+	// When the buffer starts, increment the amount of voices playing this sound.
+	void OnBufferStart(void* pBufferContext) noexcept
+	{
+		((Sound*)pBufferContext)->numOfPlayingVoices++;
+		//std::cout << ((Sound*)pBufferContext)->numOfPlayingVoices << std::endl;
+	}
+
+	// When the buffer ends, increment the amount of voices playing this sound.
+	// Also, if the sound isn't in the cache, delete it to prevent memory leaks.
+	void OnBufferEnd(void* pBufferContext) noexcept
+	{
+		((Sound*)pBufferContext)->numOfPlayingVoices--;
+		//std::cout << ((Sound*)pBufferContext)->numOfPlayingVoices << std::endl;
+		if (!((Sound*)pBufferContext)->inCache)
+		{
+			std::cout << ((Sound*)pBufferContext)->fileName << " isn't in the cache. Deleting." << std::endl;
+			((Sound*)pBufferContext)->FreeSoundData();
+			delete ((Sound*)pBufferContext);
+		}
+	}
+
+	// Methods that need to be defined but not scripted, could do cool stuff with them later
+	void OnVoiceProcessingPassEnd() noexcept {}
+	void OnVoiceProcessingPassStart(UINT32 SamplesRequired) noexcept {}
+	void OnLoopEnd(void* pBufferContext) noexcept {}
+	void OnVoiceError(void* pBufferContext, HRESULT error) noexcept {}
+};
+
 class AudioManager
 {
 public:
-	AudioManager();
-	~AudioManager();
+	AudioManager(AudioManager& other) = delete;
+	void operator=(const AudioManager&) = delete;
+	static AudioManager* GetInstance();
 	void playSound(const char filePath[MAX_SOUND_PATH_LENGTH]);
 	Sound* create_sound(const char filePath[MAX_SOUND_PATH_LENGTH]);
 	void cache_sound(Sound* sound);
 	void update_audio(float dt);
 
+protected:
+	AudioManager();
+	~AudioManager();
+
 private:
+	static AudioManager* instance;
 	static XAudioVoice voiceArr[MAX_CONCURRENT_SOUNDS];
 	Sound* cachedSounds[MAX_CACHED_SOUNDS];
 	IXAudio2* xAudio2;
 	bool init();
 	HRESULT FindChunk(HANDLE hFile, DWORD fourcc, DWORD& dwChunkSize, DWORD& dwChunkDataPosition);
 	HRESULT ReadChunkData(HANDLE hFile, void* buffer, DWORD buffersize, DWORD bufferoffset);
+
+	friend class Audio;
 };
 
