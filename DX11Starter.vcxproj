@@ -315,6 +315,8 @@
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Systems.cpp" />
     <ClCompile Include="TransformEuler.cpp" />
+    <ClCompile Include="UI\Canvas.cpp" />
+    <ClCompile Include="UI\CanvasObject.cpp" />
     <ClCompile Include="XInputManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -639,6 +641,10 @@
     <ClInclude Include="Systems.h" />
     <ClInclude Include="TransformEuler.h" />
     <ClInclude Include="UI.h" />
+    <ClInclude Include="UI\Canvas.h" />
+    <ClInclude Include="UI\CanvasObject.h" />
+    <ClInclude Include="UI\CanvasObject3.h" />
+    <ClInclude Include="UI\UI.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="XInputManager.h" />
   </ItemGroup>
