@@ -29,14 +29,11 @@ std::shared_ptr<Material> Sprite::GetMaterial()
 
 void Sprite::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera)
 {
-	DirectX::XMFLOAT2 mousePos = DirectX::XMFLOAT2((float)InputManager::GetMouseX(), (float)InputManager::GetMouseY());
 	material->PrepareMaterial();
 
 	//Set Pixel Shader and Load Data
 	material->pixelShader->SetFloat4("surfaceColor", material->surfaceColor);
-	material->pixelShader->SetFloat2("mousePos", mousePos);
-	material->pixelShader->SetFloat("roughness", material->roughness);
-	material->pixelShader->SetFloat3("cameraPos", camera->GetTransform().GetPosition());
+	//material->pixelShader->SetFloat2("mousePos", mousePos);
 
 	material->pixelShader->CopyAllBufferData();
 

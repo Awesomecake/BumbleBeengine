@@ -120,7 +120,7 @@ void Game::Init()
 	CreateMaterial(PBR_Assets "cobblestone_albedo.png", PBR_Assets "cobblestone_normals.png", PBR_Assets "cobblestone_roughness.png", PBR_Assets "cobblestone_metalness.png");
 	CreateMaterial(PBR_Assets "scratched_albedo.png", PBR_Assets "scratched_normals.png", PBR_Assets "scratched_roughness.png", PBR_Assets "scratched_metal.png");
 
-	std::shared_ptr<Material> spriteMat = CreateMaterial(Sprite_Assets "scythe_anims-Sheet.png", Sprite_Assets "scythe_anims-Sheet.png", Sprite_Assets "scythe_anims-Sheet.png", Sprite_Assets "scythe_anims-Sheet.png");
+	std::shared_ptr<Material> spriteMat = CreateSpriteMaterial(Sprite_Assets "scythe_anims-Sheet.png");
 	
 	CreateGeometry();
 
@@ -221,6 +221,8 @@ void Game::LoadShaders()
 	ppPS4 = std::make_shared<SimplePixelShader>(device, context, FixPath(L"PostProcessChromaticAberrationPS.cso").c_str());
 
 	ppVS = std::make_shared<SimpleVertexShader>(device, context, FixPath(L"FullScreenTriangle.cso").c_str());
+
+	spritePixelShader = std::make_shared<SimplePixelShader>(device, context, FixPath(L"SpritePixelShader.cso").c_str());
 }
 
 void Game::InitializeInputActions()
@@ -325,6 +327,20 @@ std::shared_ptr<Material> Game::CreateMaterial(std::wstring albedoFile, std::wst
 	mat->PrepareMaterial();
 
 	materials.push_back(mat);
+	return mat;
+}
+
+std::shared_ptr<Material> Game::CreateSpriteMaterial(std::wstring albedoFile)
+{
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
+
+	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(albedoFile).c_str(), nullptr, albedoSRV.GetAddressOf());
+
+	std::shared_ptr<Material> mat = std::make_shared<Material>(XMFLOAT4(1, 1, 1, 1), spritePixelShader, vertexShader);
+	mat->textureSRVs.insert({ "Albedo", albedoSRV });
+	mat->samplers.insert({ "BasicSampler",samplerState });
+	mat->PrepareMaterial();
+
 	return mat;
 }
 
