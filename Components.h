@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include <memory>
+#include "AudioManager.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
@@ -179,6 +180,7 @@ struct LightComponent
 
 struct AudioComponent
 {
-	
+public:
+	std::shared_ptr<Audio> audio;
 };
 

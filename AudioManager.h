@@ -190,10 +190,15 @@ public:
 	IXAudio2SourceVoice* voice;
 	Sound sound;
 
+	Audio()
+	{
+		InitVoice();
+	}
+
 	Audio(const char filePath[MAX_SOUND_PATH_LENGTH])
 	{
-		AudioManager* audioManager = AudioManager::GetInstance();
-		audioManager->xAudio2
+		InitVoice();
+		LoadSoundFile(filePath);
 	}
 
 	void OnStreamEnd() noexcept
@@ -228,6 +233,39 @@ public:
 	void OnVoiceProcessingPassStart(UINT32 SamplesRequired) noexcept {}
 	void OnLoopEnd(void* pBufferContext) noexcept {}
 	void OnVoiceError(void* pBufferContext, HRESULT error) noexcept {}
+
+	void InitVoice()
+	{
+		// Define a format
+		WAVEFORMATEX wave = {};
+		wave.wFormatTag = WAVE_FORMAT_PCM;
+		wave.nChannels = NUM_CHANNELS;
+		wave.nSamplesPerSec = SAMPLESPERSEC;
+		wave.wBitsPerSample = BITSPERSSAMPLE;
+		wave.nBlockAlign = NUM_CHANNELS * BITSPERSSAMPLE / 8;
+		wave.nAvgBytesPerSec = SAMPLESPERSEC * wave.nBlockAlign;
+
+		// Create the voice
+		AudioManager* audioManager = AudioManager::GetInstance();
+		audioManager->xAudio2->CreateSourceVoice(&voice, &wave, 0, XAUDIO2_DEFAULT_FREQ_RATIO, this);
+	}
+
+	void LoadSoundFile(const char filePath[MAX_SOUND_PATH_LENGTH])
+	{
+		AudioManager* audioManager = AudioManager::GetInstance();
+		sound = *(audioManager->create_sound(filePath));
+		voice->SubmitSourceBuffer(sound.GetBuffer());
+	}
+
+	void Start()
+	{
+		voice->Start();
+	}
+
+	void Stop()
+	{
+		voice->Stop();
+	}
 };
 
 class AudioManager

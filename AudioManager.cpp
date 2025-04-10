@@ -143,22 +143,22 @@ bool AudioManager::init()
 	wave.nAvgBytesPerSec = SAMPLESPERSEC * wave.nBlockAlign;
 
 	// Initialize the array of voices
-	for (int idx = 0; idx < MAX_CONCURRENT_SOUNDS; idx++)
-	{
-		XAudioVoice* voice = &voiceArr[idx];
-		hr = xAudio2->CreateSourceVoice(&voice->voice, &wave, 0, XAUDIO2_DEFAULT_FREQ_RATIO, voice);
-		voice->voice->SetVolume(VOLUME);
-		if (FAILED(hr))
-		{
-			std::cout << "Failed at voice creation" << std::endl;
-			return false;
-		}
-	}
-
-	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
-	{
-		cachedSounds[idx] = nullptr;
-	}
+	// for (int idx = 0; idx < MAX_CONCURRENT_SOUNDS; idx++)
+	// {
+	// 	XAudioVoice* voice = &voiceArr[idx];
+	// 	hr = xAudio2->CreateSourceVoice(&voice->voice, &wave, 0, XAUDIO2_DEFAULT_FREQ_RATIO, voice);
+	// 	voice->voice->SetVolume(VOLUME);
+	// 	if (FAILED(hr))
+	// 	{
+	// 		std::cout << "Failed at voice creation" << std::endl;
+	// 		return false;
+	// 	}
+	// }
+	// 
+	// for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
+	// {
+	// 	cachedSounds[idx] = nullptr;
+	// }
 
 	// Everything has been set up successfully, return true
 	return true;
@@ -276,6 +276,15 @@ HRESULT AudioManager::ReadChunkData(HANDLE hFile, void* buffer, DWORD buffersize
 
 Sound* AudioManager::create_sound(const char filePath[MAX_SOUND_PATH_LENGTH])
 {
+	// Check the cache for a sound of a given file name, and if one exists, return it instead
+	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
+	{
+		// If the sound is found, play that sound and return early.
+		Sound* currentSound = cachedSounds[idx];
+		if (currentSound != nullptr && currentSound->GetFileName() == filePath)
+			return currentSound;
+	}
+	
 	// Declare WAVEFORMATEX and XAUDIO2_BUFFER structs
 	WAVEFORMATEXTENSIBLE wfx = { 0 };
 	XAUDIO2_BUFFER buffer = { 0 };
