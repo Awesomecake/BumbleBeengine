@@ -1,62 +1,67 @@
 #include "Canvas.h"
 
-namespace UI
+Canvas::Canvas()
 {
-	Canvas::Canvas()
-	{
-	}
+}
 
-	Canvas::~Canvas()
+Canvas::~Canvas()
+{
+	for (auto& object : objects)
 	{
-		for (auto& object : objects)
-		{
-			delete object.second;
-		}
+		delete object.first;
+		delete object.second;
 	}
+	objects.clear(); // Clear the unordered_map of objects
+}
 
-	float Canvas::GetScreenWidth()
-	{
-		return 0.0f;
-	}
+float Canvas::GetScreenWidth()
+{
+	return 0.0f;
+}
 
-	float Canvas::GetScreenHeight()
-	{
-		return 0.0f;
-	}
+float Canvas::GetScreenHeight()
+{
+	return 0.0f;
+}
 
-	void Canvas::Render(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context)
+void Canvas::Render(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context)
+{
+	for (auto& object : objects)
 	{
-		for (auto& object : objects)
-		{
-			object.second->Render(context);
-		}
+		object.second->Render(context);
 	}
+}
 
-	float Canvas::GetPosition(AnchorPoint anchor, XMFLOAT2 position)
+void Canvas::OnResize(float width, float height)
+{
+	origin.x = width / 2.0f; // Set the origin to the center of the canvas
+	origin.y = height / 2.0f; // Set the origin to the center of the canvas
+}
+
+XMFLOAT2 Canvas::GetPosition(AnchorPoint anchor, XMFLOAT2 position)
+{
+	switch (anchor)
 	{
-		switch (anchor)
-		{
-		case Top:
-			break;
-		case Bottom:
-			break;
-		case Left:
-			break;
-		case Right:
-			break;
-		case Center:
-			break;
-		case TopLeft:
-			break;
-		case TopRight:
-			break;
-		case BottomLeft:
-			break;
-		case BottomRight:
-			break;
-		default:
-			break;
-		}
-		return 0.0f;
+	case Top:
+		break;
+	case Bottom:
+		break;
+	case Left:
+		break;
+	case Right:
+		break;
+	case Center:
+		break;
+	case TopLeft:
+		break;
+	case TopRight:
+		break;
+	case BottomLeft:
+		break;
+	case BottomRight:
+		break;
+	default:
+		break;
 	}
+	return XMFLOAT2();
 }

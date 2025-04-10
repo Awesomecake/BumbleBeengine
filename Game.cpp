@@ -16,6 +16,8 @@
 
 #define PBR_Assets L"../../Assets/PBR/"
 
+#define Sprite_Assets L"../../Assets/SpriteSheets/"
+
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -113,13 +115,16 @@ void Game::Init()
 	postProcess4.pixelShaderFloatData.insert({ "mouseY", &mouseY });
 
 	shadowMap = ShadowMap(device, shadowMapVertexShader, windowWidth, windowHeight);
-
 	CreateMaterial(PBR_Assets "floor_albedo.png", PBR_Assets "floor_normals.png", PBR_Assets "floor_roughness.png", PBR_Assets "floor_metal.png");
 	CreateMaterial(PBR_Assets "bronze_albedo.png", PBR_Assets "bronze_normals.png", PBR_Assets "bronze_roughness.png", PBR_Assets "bronze_metal.png");
 	CreateMaterial(PBR_Assets "cobblestone_albedo.png", PBR_Assets "cobblestone_normals.png", PBR_Assets "cobblestone_roughness.png", PBR_Assets "cobblestone_metalness.png");
 	CreateMaterial(PBR_Assets "scratched_albedo.png", PBR_Assets "scratched_normals.png", PBR_Assets "scratched_roughness.png", PBR_Assets "scratched_metal.png");
 
+	std::shared_ptr<Material> spriteMat = CreateSpriteMaterial(Sprite_Assets "scythe_anims-Sheet.png");
+	
 	CreateGeometry();
+
+	testSprite = std::make_shared<Sprite>(quad, spriteMat);
 
 	entt::entity skyEntity = registry.create();
 	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);
@@ -216,6 +221,8 @@ void Game::LoadShaders()
 	ppPS4 = std::make_shared<SimplePixelShader>(device, context, FixPath(L"PostProcessChromaticAberrationPS.cso").c_str());
 
 	ppVS = std::make_shared<SimpleVertexShader>(device, context, FixPath(L"FullScreenTriangle.cso").c_str());
+
+	spritePixelShader = std::make_shared<SimplePixelShader>(device, context, FixPath(L"SpritePixelShader.cso").c_str());
 }
 
 void Game::InitializeInputActions()
@@ -276,29 +283,30 @@ void Game::InitializeInputActions()
 
 	InputActionManager::GetAction(L"Shoot").OnTrigger.push_back([&](InputActionManager::InputData data)
 	{
-		//if (data.inputType == InputActionManager::InputType::Pressed && (data.controllerIndex == CONTROLLER_1 || data.controllerIndex == NOT_A_CONTROLLER) )
-		//{
-		//	int matLocation = rand() % materials.size();
+		if (data.inputType == InputActionManager::InputType::Pressed && (data.controllerIndex == CONTROLLER_1 || data.controllerIndex == NOT_A_CONTROLLER) )
+		{
+			int matLocation = rand() % materials.size();
 
-		//	XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
-		//	XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
+			XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
+			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-		//	BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
-		//	GameEntity entity = GameEntity(sphere, materials[matLocation], id);
+			BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
 
-		//	entity.GetTransform().SetScale(0.5, 0.5, 0.5);
-		//	entity.GetTransform().SetPosition(camPos);
+			entt::entity entity = registry.create();
+			registry.emplace<TransformComponent>(entity, camPos);
+			registry.emplace<MeshComponent>(entity, sphere);
+			registry.emplace<MaterialComponent>(entity, materials[matLocation]);
+			registry.emplace<PhysicsComponent>(entity, id);
 
-		//	gameEntities.push_back(entity);
-		//	bodyObjects[id] = entity;
+			registry.get<TransformComponent>(entity).SetScale(DirectX::XMFLOAT3(0.5, 0.5, 0.5));
 
-		//	physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
-		//}
+			physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+		}
 	});
 
 }
 
-void Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile)
+std::shared_ptr<Material> Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile)
 {
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalsSRV;
@@ -319,6 +327,21 @@ void Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std:
 	mat->PrepareMaterial();
 
 	materials.push_back(mat);
+	return mat;
+}
+
+std::shared_ptr<Material> Game::CreateSpriteMaterial(std::wstring albedoFile)
+{
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
+
+	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(albedoFile).c_str(), nullptr, albedoSRV.GetAddressOf());
+
+	std::shared_ptr<Material> mat = std::make_shared<Material>(XMFLOAT4(1, 1, 1, 1), spritePixelShader, vertexShader);
+	mat->textureSRVs.insert({ "Albedo", albedoSRV });
+	mat->samplers.insert({ "BasicSampler",samplerState });
+	mat->PrepareMaterial();
+
+	return mat;
 }
 
 
@@ -579,6 +602,10 @@ void Game::RenderScene()
 			mesh_comp.mesh->Draw(context);
 		}
 	}
+
+	//test sprite render
+
+	testSprite->Draw(context, cameras[selectedCamera]);
 
 	auto skyboxview = registry.view<SkyBoxComponent>();
 	for (auto [entity, skyBox_comp] : skyboxview.each())

@@ -183,7 +183,7 @@ void Emitter::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> c, std::shared_pt
 	}
 }
 
-Transform& Emitter::GetTransform()
+TransformEuler& Emitter::GetTransform()
 {
 	return transform;
 }
