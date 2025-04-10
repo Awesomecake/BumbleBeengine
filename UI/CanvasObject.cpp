@@ -1,17 +1,17 @@
-#include "CanvasObject.h"
-
-CanvasObject::CanvasObject()
-{
-	indexCount = 0;
-}
-
-CanvasObject::~CanvasObject()
-{
-	/*for (auto child  objects)
-	{
-
-	}*/
-}
+//#include "CanvasObject.h"
+//
+//CanvasObject::CanvasObject()
+//{
+//	indexCount = 0;
+//}
+//
+//CanvasObject::~CanvasObject()
+//{
+//	/*for (auto child  objects)
+//	{
+//
+//	}*/
+//}
 
 //void CanvasObject::Render(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context)
 //{

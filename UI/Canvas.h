@@ -1,7 +1,7 @@
-#ifndef _Canvas_
-#define _Canvas_
+//#ifndef _Canvas_
+//#define _Canvas_
+//
+//#include "UI.h"
+//#include "CanvasObject.h"
 
-#include "UI.h"
-#include "CanvasObject.h"
-
-#endif // !_Canvas_
+//#endif // !_Canvas_
