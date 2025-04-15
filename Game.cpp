@@ -10,6 +10,8 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 
+#include "nlohmann/json.hpp"
+
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
@@ -174,6 +176,9 @@ void Game::Init()
 	registry.emplace<MeshComponent>(testEntity2, sphere);
 	registry.emplace<MaterialComponent>(testEntity2, materials[0]);
 	registry.emplace<PhysicsComponent>(testEntity2, sphere2);
+
+	// Serialize the registry to JSON as a test.
+	nlohmann::json;
 
 #pragma region Constructing Lights
 	entt::entity light1 = registry.create();
