@@ -4,6 +4,8 @@ Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _materia
 {
 	mesh = refMesh;
 	material = _material;
+
+	//hard coded values for testing rn
 	drawRect = std::make_shared<DrawRect>(0, 0, 128, 80, 1280, 800);
 	
 }
