@@ -5,6 +5,7 @@ Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _materia
 	mesh = refMesh;
 	material = _material;
 	drawRect = std::make_shared<DrawRect>(0, 0, 128, 80, 1280, 800);
+	
 }
 
 
@@ -59,4 +60,14 @@ void Sprite::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shar
 void Sprite::SetMaterial(std::shared_ptr<Material> newMat)
 {
 	material = newMat;
+}
+
+void Sprite::SetDrawRect(float column, float row, float rectW, float rectH, float imgW, float imgH)
+{
+	drawRect->xOffset = column * rectW;
+	drawRect->yOffset = row * rectH;
+	drawRect->rectWidth = rectW;
+	drawRect->rectHeight = rectH;
+	drawRect->imgWidth = imgW;
+	drawRect->imgHeight = imgH;
 }
