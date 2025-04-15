@@ -4,6 +4,7 @@ Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _materia
 {
 	mesh = refMesh;
 	material = _material;
+	drawRect = std::make_shared<DrawRect>(0, 0, 128, 80, 1280, 800);
 }
 
 
@@ -33,7 +34,14 @@ void Sprite::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shar
 
 	//Set Pixel Shader and Load Data
 	material->pixelShader->SetFloat4("surfaceColor", material->surfaceColor);
-	//material->pixelShader->SetFloat2("mousePos", mousePos);
+	material->pixelShader->SetFloat("xOffset", drawRect->xOffset);
+	material->pixelShader->SetFloat("yOffset", drawRect->yOffset);
+	material->pixelShader->SetFloat("rectWidth", drawRect->rectWidth);
+	material->pixelShader->SetFloat("rectHeight", drawRect->rectHeight);
+	material->pixelShader->SetFloat("imgWidth", drawRect->imgWidth);
+	material->pixelShader->SetFloat("imgHeight", drawRect->imgHeight);
+
+	transform.SetScale(1.0f, 1.0f, drawRect->imgHeight / drawRect->imgWidth);
 
 	material->pixelShader->CopyAllBufferData();
 

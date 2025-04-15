@@ -151,8 +151,6 @@
   <ItemGroup>
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Canvas.cpp" />
-    <ClCompile Include="CanvasObject.cpp" />
     <ClCompile Include="DXCore.cpp" />
     <ClCompile Include="Emitter.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -315,13 +313,13 @@
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Systems.cpp" />
     <ClCompile Include="TransformEuler.cpp" />
+    <ClCompile Include="UI\Canvas.cpp" />
+    <ClCompile Include="UI\CanvasObject.cpp" />
     <ClCompile Include="XInputManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Canvas.h" />
-    <ClInclude Include="CanvasObject.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="Emitter.h" />
@@ -639,6 +637,10 @@
     <ClInclude Include="Systems.h" />
     <ClInclude Include="TransformEuler.h" />
     <ClInclude Include="UI.h" />
+    <ClInclude Include="UI\Canvas.h" />
+    <ClInclude Include="UI\CanvasObject.h" />
+    <ClInclude Include="UI\CanvasObject3.h" />
+    <ClInclude Include="UI\UI.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="XInputManager.h" />
   </ItemGroup>

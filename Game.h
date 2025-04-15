@@ -110,6 +110,7 @@ private:
 	std::shared_ptr<SimpleVertexShader> shadowMapVertexShader;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> spriteSamplerState;
 
 	//--------------JoltPhysics----------------
 	PhysicsManager* physicsManager;
