@@ -94,6 +94,15 @@ void Game::Init()
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 
+	D3D11_SAMPLER_DESC spriteSamplerDesc = {};
+	spriteSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	spriteSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	spriteSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	spriteSamplerDesc.Filter = D3D11_FILTER_MAXIMUM_MIN_LINEAR_MAG_MIP_POINT;
+	spriteSamplerDesc.MaxAnisotropy = 16;		// Can make this a "Graphics Setting"
+	spriteSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	device->CreateSamplerState(&spriteSamplerDesc, spriteSamplerState.GetAddressOf());
+
 	// Sampler state for post processing
 	D3D11_SAMPLER_DESC ppSampDesc = {};
 	ppSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -343,7 +352,7 @@ std::shared_ptr<Material> Game::CreateSpriteMaterial(std::wstring albedoFile)
 
 	std::shared_ptr<Material> mat = std::make_shared<Material>(XMFLOAT4(1, 1, 1, 1), spritePixelShader, vertexShader);
 	mat->textureSRVs.insert({ "Albedo", albedoSRV });
-	mat->samplers.insert({ "BasicSampler",samplerState });
+	mat->samplers.insert({ "BasicSampler",spriteSamplerState });
 	mat->PrepareMaterial();
 
 	return mat;
