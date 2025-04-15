@@ -3,13 +3,6 @@
 
 XAudioVoice AudioManager::voiceArr[MAX_CONCURRENT_SOUNDS];
 
-AudioManager* AudioManager::GetInstance()
-{
-	if (instance == nullptr)
-		instance = new AudioManager();
-	return instance;
-}
-
 AudioManager::AudioManager()
 {
 	bool initSuccess = init();
@@ -44,6 +37,9 @@ AudioManager::~AudioManager()
 		}
 	}
 
+	// Delete the voice matrix in the X3DAudio settings
+	delete DSPSettings.pMatrixCoefficients;
+
 	// Release the reference to the XAudio2 engine
 	if (xAudio2)
 	{
@@ -52,58 +48,6 @@ AudioManager::~AudioManager()
 	}
 
 	CoUninitialize();
-}
-
-void AudioManager::playSound(const char filePath[MAX_SOUND_PATH_LENGTH])
-{
-	// Check if there are any inactive voices (has to go after file loading since that takes a while)
-	IXAudio2SourceVoice* chosenVoice = nullptr;
-	for (int idx = 0; idx < MAX_CONCURRENT_SOUNDS; idx++)
-	{
-		XAudioVoice* voice = &voiceArr[idx];
-		// If an inactive voice is found, submit the source buffer to it, play the sound, and break the loop early
-		if (!voice->playing)
-		{
-			std::cout << idx << std::endl;
-			chosenVoice = voice->voice;
-			voice->playing = true;
-			break;
-		}
-	}
-
-	// If there aren't any open voices, return early
-	if (nullptr == chosenVoice)
-	{
-		// Don't forget to delete the unused memory :)
-		//delete[] pDataBuffer;
-
-		// Print corresponding message and return
-		printf("All voices are playing sounds. Skipping audio playback\n");
-		return;
-	}
-
-	// Look through the cache for a sound with the same file name
-	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
-	{
-		// If the sound is found, play that sound and return early.
-		Sound* currentSound = cachedSounds[idx];
-		if (currentSound != nullptr && currentSound->GetFileName() == filePath)
-		{
-			chosenVoice->SubmitSourceBuffer(cachedSounds[idx]->GetBuffer());
-			chosenVoice->Start(0);
-			return;
-		}
-	}
-
-	// Create a new Sound struct
-	Sound* newSound = create_sound(filePath);
-
-	// Play the sound effect
-	chosenVoice->SubmitSourceBuffer(newSound->GetBuffer());
-	chosenVoice->Start(0);
-
-	// Add the sound to the cache
-	cache_sound(newSound);
 }
 
 bool AudioManager::init()
@@ -143,30 +87,111 @@ bool AudioManager::init()
 	wave.nAvgBytesPerSec = SAMPLESPERSEC * wave.nBlockAlign;
 
 	// Initialize the array of voices
-	// for (int idx = 0; idx < MAX_CONCURRENT_SOUNDS; idx++)
-	// {
-	// 	XAudioVoice* voice = &voiceArr[idx];
-	// 	hr = xAudio2->CreateSourceVoice(&voice->voice, &wave, 0, XAUDIO2_DEFAULT_FREQ_RATIO, voice);
-	// 	voice->voice->SetVolume(VOLUME);
-	// 	if (FAILED(hr))
-	// 	{
-	// 		std::cout << "Failed at voice creation" << std::endl;
-	// 		return false;
-	// 	}
-	// }
-	// 
-	// for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
-	// {
-	// 	cachedSounds[idx] = nullptr;
-	// }
+	for (int idx = 0; idx < MAX_CONCURRENT_SOUNDS; idx++)
+	{
+		XAudioVoice* voice = &voiceArr[idx];
+		hr = xAudio2->CreateSourceVoice(&voice->voice, &wave, 0, XAUDIO2_DEFAULT_FREQ_RATIO, voice);
+		voice->voice->SetVolume(VOLUME);
+		voice->Init3DEmitter();
+		if (FAILED(hr))
+		{
+			std::cout << "Failed at voice creation" << std::endl;
+			return false;
+		}
+	}
+
+	// Initialize the array of cached sounds
+	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
+	{
+		cachedSounds[idx] = nullptr;
+	}
+
+	// Initialize the X3DAudio engine and the main listener
+	DWORD dwChannelMask;
+	masteringVoice->GetChannelMask(&dwChannelMask);
+	X3DAudioInitialize(dwChannelMask, X3DAUDIO_SPEED_OF_SOUND, X3DInstance);
+	mainListener = {};
+	// Positional emitters are initialized with the XAudioVoices
+
+	// Initialize DSP settings
+	DSPSettings = {};
+	FLOAT32* matrix = new FLOAT32[NUM_CHANNELS];
+	DSPSettings.SrcChannelCount = 1;
+	DSPSettings.DstChannelCount = NUM_CHANNELS;
+	DSPSettings.pMatrixCoefficients = matrix;
 
 	// Everything has been set up successfully, return true
 	return true;
 }
 
+void AudioManager::playSound(const char filePath[MAX_SOUND_PATH_LENGTH])
+{
+	// Check if there are any inactive voices (has to go after file loading since that takes a while)
+	IXAudio2SourceVoice* chosenVoice = nullptr;
+	for (int idx = 0; idx < MAX_CONCURRENT_SOUNDS; idx++)
+	{
+		XAudioVoice* voice = &voiceArr[idx];
+		// If an inactive voice is found, submit the source buffer to it, play the sound, and break the loop early
+		if (!voice->playing)
+		{
+			std::cout << idx << std::endl;
+			chosenVoice = voice->voice;
+			voice->playing = true;
+			break;
+		}
+	}
+
+	// If there aren't any open voices, return early
+	// TODO: Allow a sound to still be cached if all of the voices are playing sounds
+	if (nullptr == chosenVoice)
+	{
+		// Don't forget to delete the unused memory :)
+		//delete[] pDataBuffer;
+
+		// Print corresponding message and return
+		printf("All voices are playing sounds. Skipping audio playback\n");
+		return;
+	}
+
+	// Look through the cache for a sound with the same file name
+	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
+	{
+		// If the sound is found, play that sound and return early.
+		Sound* currentSound = cachedSounds[idx];
+		if (currentSound != nullptr && currentSound->GetFileName() == filePath)
+		{
+			chosenVoice->SubmitSourceBuffer(cachedSounds[idx]->GetBuffer());
+			chosenVoice->Start(0);
+			return;
+		}
+	}
+
+	// Create a new Sound struct
+	Sound* newSound = create_sound(filePath);
+
+	// Play the sound effect
+	chosenVoice->SubmitSourceBuffer(newSound->GetBuffer());
+	chosenVoice->Start(0);
+
+	// Add the sound to the cache
+	cache_sound(newSound);
+}
+
 void AudioManager::update_audio(float dt)
 {
-	// Until update_audio has anything better to do, have it play funny sounds when different keys are pressed
+	// Update the positional audio for any voices that are playing positional audio
+	for (int i = 0; i < MAX_CONCURRENT_SOUNDS; i++)
+	{
+		if (!voiceArr[i].isPositional) continue;
+
+		// Update audio settings if the voice is positional
+		X3DAudioCalculate(X3DInstance, &mainListener, voiceArr[i].GetEmitter(), X3DAUDIO_CALCULATE_MATRIX, &DSPSettings);
+
+		// Apply the settings to the voice
+		IXAudio2SourceVoice* voice = voiceArr[i].voice;
+		// Broken, need reference to the mastering voice
+		// voice->SetOutputMatrix(xAudio2, 1, deviceDetails.OutputFormat.Format.nChannels, DSPSettings.pMatrixCoefficients);
+	}
 }
 
 void AudioManager::cache_sound(Sound* sound)
@@ -276,15 +301,6 @@ HRESULT AudioManager::ReadChunkData(HANDLE hFile, void* buffer, DWORD buffersize
 
 Sound* AudioManager::create_sound(const char filePath[MAX_SOUND_PATH_LENGTH])
 {
-	// Check the cache for a sound of a given file name, and if one exists, return it instead
-	for (int idx = 0; idx < MAX_CACHED_SOUNDS; idx++)
-	{
-		// If the sound is found, play that sound and return early.
-		Sound* currentSound = cachedSounds[idx];
-		if (currentSound != nullptr && currentSound->GetFileName() == filePath)
-			return currentSound;
-	}
-	
 	// Declare WAVEFORMATEX and XAUDIO2_BUFFER structs
 	WAVEFORMATEXTENSIBLE wfx = { 0 };
 	XAUDIO2_BUFFER buffer = { 0 };
@@ -328,4 +344,13 @@ Sound* AudioManager::create_sound(const char filePath[MAX_SOUND_PATH_LENGTH])
 	// Create the sound struct and return it
 	Sound* newSound = new Sound(filePath, buffer);
 	return newSound;
+}
+
+void AudioManager::UpdateListener(X3DAUDIO_VECTOR front, X3DAUDIO_VECTOR up, X3DAUDIO_VECTOR pos,
+	X3DAUDIO_VECTOR vel)
+{
+	mainListener.OrientFront = front;
+	mainListener.OrientTop = up;
+	mainListener.Position = pos;
+	mainListener.Velocity = vel;
 }

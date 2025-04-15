@@ -69,7 +69,7 @@ Game::~Game()
 
 // Function to be called by the delegate
 void CollisionCallback(AudioManager* audioManager) {
-	audioManager->playSound("Sounds/vine-boom.wav");
+	//audioManager->playSound("Sounds/vine-boom.wav");
 }
 
 // --------------------------------------------------------
@@ -427,10 +427,10 @@ void Game::Update(float _deltaTime, float totalTime)
 	if (InputManager::KeyDown(VK_ESCAPE))
 		Quit();
 
-	if (InputManager::KeyPress(VK_END))
-	{
-		audioManager->playSound("Sounds/vine-boom.wav");
-	}
+	//if (InputManager::KeyPress(VK_END))
+	//{
+	//	audioManager->playSound("Sounds/vine-boom.wav");
+	//}
 
 	cameras[selectedCamera].get()->Update(_deltaTime);
 	ImGuiUpdate(_deltaTime, totalTime);

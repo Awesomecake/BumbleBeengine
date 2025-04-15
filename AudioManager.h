@@ -1,5 +1,6 @@
 #pragma once
 #include <xaudio2.h>
+#include <x3daudio.h>
 #include <memory>
 #include <vector>
 #include <iostream>
@@ -134,16 +135,38 @@ public:
 	}
 
 	friend class XAudioVoice;
-	friend class Audio;
 	friend class AudioManager;
 };
 
 // XAudioVoice struct
+// TODO: Whenever some kind of GameObject is made, allow them to use their own
+// XAudioVoice for playing positional audio.
 struct XAudioVoice : IXAudio2VoiceCallback
 {
 public:
 	bool playing = false;
+	bool isPositional = false;
 	IXAudio2SourceVoice* voice;
+
+	X3DAUDIO_EMITTER* GetEmitter()
+	{
+		return &emitter;
+	}
+
+	void Init3DEmitter()
+	{
+		emitter.ChannelCount = 1; // If problems show up, up the channel count to 2
+		emitter.CurveDistanceScaler = emitter.DopplerScaler = 1.0f;
+	}
+
+	void UpdateEmitter(X3DAUDIO_VECTOR front, X3DAUDIO_VECTOR up, X3DAUDIO_VECTOR pos,
+		X3DAUDIO_VECTOR vel)
+	{
+		emitter.OrientFront = front;
+		emitter.OrientTop = up;
+		emitter.Position = pos;
+		emitter.Velocity = vel;
+	}
 
 	void OnStreamEnd() noexcept
 	{
@@ -155,7 +178,6 @@ public:
 	void OnBufferStart(void* pBufferContext) noexcept
 	{
 		((Sound*)pBufferContext)->numOfPlayingVoices++;
-		//std::cout << ((Sound*)pBufferContext)->numOfPlayingVoices << std::endl;
 	}
 
 	// When the buffer ends, increment the amount of voices playing this sound.
@@ -177,121 +199,30 @@ public:
 	void OnVoiceProcessingPassStart(UINT32 SamplesRequired) noexcept {}
 	void OnLoopEnd(void* pBufferContext) noexcept {}
 	void OnVoiceError(void* pBufferContext, HRESULT error) noexcept {}
-};
-
-/// <summary>
-/// The Audio struct, which is essentially a hybrid of the prior
-/// XAudioVoice and some of the audio playing logic from AudioManager.
-/// </summary>
-struct Audio : IXAudio2VoiceCallback
-{
-public:
-	bool playing = false;
-	IXAudio2SourceVoice* voice;
-	Sound sound;
-
-	Audio()
-	{
-		InitVoice();
-	}
-
-	Audio(const char filePath[MAX_SOUND_PATH_LENGTH])
-	{
-		InitVoice();
-		LoadSoundFile(filePath);
-	}
-
-	void OnStreamEnd() noexcept
-	{
-		voice->Stop();
-		playing = false;
-	}
-
-	// When the buffer starts, increment the amount of voices playing this sound.
-	void OnBufferStart(void* pBufferContext) noexcept
-	{
-		((Sound*)pBufferContext)->numOfPlayingVoices++;
-		//std::cout << ((Sound*)pBufferContext)->numOfPlayingVoices << std::endl;
-	}
-
-	// When the buffer ends, increment the amount of voices playing this sound.
-	// Also, if the sound isn't in the cache, delete it to prevent memory leaks.
-	void OnBufferEnd(void* pBufferContext) noexcept
-	{
-		((Sound*)pBufferContext)->numOfPlayingVoices--;
-		//std::cout << ((Sound*)pBufferContext)->numOfPlayingVoices << std::endl;
-		if (!((Sound*)pBufferContext)->inCache)
-		{
-			std::cout << ((Sound*)pBufferContext)->fileName << " isn't in the cache. Deleting." << std::endl;
-			((Sound*)pBufferContext)->FreeSoundData();
-			delete ((Sound*)pBufferContext);
-		}
-	}
-
-	// Methods that need to be defined but not scripted, could do cool stuff with them later
-	void OnVoiceProcessingPassEnd() noexcept {}
-	void OnVoiceProcessingPassStart(UINT32 SamplesRequired) noexcept {}
-	void OnLoopEnd(void* pBufferContext) noexcept {}
-	void OnVoiceError(void* pBufferContext, HRESULT error) noexcept {}
-
-	void InitVoice()
-	{
-		// Define a format
-		WAVEFORMATEX wave = {};
-		wave.wFormatTag = WAVE_FORMAT_PCM;
-		wave.nChannels = NUM_CHANNELS;
-		wave.nSamplesPerSec = SAMPLESPERSEC;
-		wave.wBitsPerSample = BITSPERSSAMPLE;
-		wave.nBlockAlign = NUM_CHANNELS * BITSPERSSAMPLE / 8;
-		wave.nAvgBytesPerSec = SAMPLESPERSEC * wave.nBlockAlign;
-
-		// Create the voice
-		AudioManager* audioManager = AudioManager::GetInstance();
-		audioManager->xAudio2->CreateSourceVoice(&voice, &wave, 0, XAUDIO2_DEFAULT_FREQ_RATIO, this);
-	}
-
-	void LoadSoundFile(const char filePath[MAX_SOUND_PATH_LENGTH])
-	{
-		AudioManager* audioManager = AudioManager::GetInstance();
-		sound = *(audioManager->create_sound(filePath));
-		voice->SubmitSourceBuffer(sound.GetBuffer());
-	}
-
-	void Start()
-	{
-		voice->Start();
-	}
-
-	void Stop()
-	{
-		voice->Stop();
-	}
+private:
+	X3DAUDIO_EMITTER emitter = {};
 };
 
 class AudioManager
 {
 public:
-	AudioManager(AudioManager& other) = delete;
-	void operator=(const AudioManager&) = delete;
-	static AudioManager* GetInstance();
+	AudioManager();
+	~AudioManager();
 	void playSound(const char filePath[MAX_SOUND_PATH_LENGTH]);
 	Sound* create_sound(const char filePath[MAX_SOUND_PATH_LENGTH]);
 	void cache_sound(Sound* sound);
 	void update_audio(float dt);
-
-protected:
-	AudioManager();
-	~AudioManager();
+	void UpdateListener(X3DAUDIO_VECTOR front, X3DAUDIO_VECTOR up, X3DAUDIO_VECTOR pos,
+		X3DAUDIO_VECTOR vel);
 
 private:
-	static AudioManager* instance;
 	static XAudioVoice voiceArr[MAX_CONCURRENT_SOUNDS];
 	Sound* cachedSounds[MAX_CACHED_SOUNDS];
 	IXAudio2* xAudio2;
+	X3DAUDIO_HANDLE X3DInstance;
+	X3DAUDIO_DSP_SETTINGS DSPSettings;
+	X3DAUDIO_LISTENER mainListener;
 	bool init();
 	HRESULT FindChunk(HANDLE hFile, DWORD fourcc, DWORD& dwChunkSize, DWORD& dwChunkDataPosition);
 	HRESULT ReadChunkData(HANDLE hFile, void* buffer, DWORD buffersize, DWORD bufferoffset);
-
-	friend class Audio;
 };
-
