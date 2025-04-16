@@ -46,6 +46,45 @@ DirectX::XMFLOAT4X4 Systems::CalcWorldInverseTransposeMatrix(TransformComponent&
 
 	return transform_comp.worldInverseTransposeMatrix;
 }
+
+DirectX::XMFLOAT3 Systems::GetRight(TransformComponent& transform_comp)
+{
+	DirectX::XMFLOAT4 quaternion = transform_comp.GetQuaternion();
+	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+
+	DirectX::XMVECTOR rightVector = DirectX::XMVectorSet(1, 0, 0, 0);
+	rightVector = DirectX::XMVector3Rotate(rightVector, quat);
+
+	DirectX::XMFLOAT3 newRightVec = DirectX::XMFLOAT3();
+	DirectX::XMStoreFloat3(&newRightVec, rightVector);
+	return newRightVec;
+}
+
+DirectX::XMFLOAT3 Systems::GetUp(TransformComponent& transform_comp)
+{
+	DirectX::XMFLOAT4 quaternion = transform_comp.GetQuaternion();
+	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+
+	DirectX::XMVECTOR upVector = DirectX::XMVectorSet(0, 1, 0, 0);
+	upVector = DirectX::XMVector3Rotate(upVector, quat);
+
+	DirectX::XMFLOAT3 newUpVec = DirectX::XMFLOAT3();
+	DirectX::XMStoreFloat3(&newUpVec, upVector);
+	return newUpVec;
+}
+
+DirectX::XMFLOAT3 Systems::GetForward(TransformComponent& transform_comp)
+{
+	DirectX::XMFLOAT4 quaternion = transform_comp.GetQuaternion();
+	DirectX::XMVECTOR quat = DirectX::XMVectorSet(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+
+	DirectX::XMVECTOR forwardVector = DirectX::XMVectorSet(0, 0, 1, 0);
+	forwardVector = DirectX::XMVector3Rotate(forwardVector,quat);
+
+	DirectX::XMFLOAT3 newForwardVec = DirectX::XMFLOAT3();
+	DirectX::XMStoreFloat3(&newForwardVec, forwardVector);
+	return newForwardVec;
+}
 #pragma endregion
 
 #pragma region PhysicsLogic

@@ -168,9 +168,9 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
 	physicsManager = new PhysicsManager();
-	BodyID sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic);
+	BodyID sphere1 = physicsManager->CreateSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic);
 	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
-	BodyID sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic);
+	BodyID sphere2 = physicsManager->CreateSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
@@ -304,7 +304,7 @@ void Game::InitializeInputActions()
 			XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
 			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-			BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
+			BodyID id = physicsManager->CreateSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
 
 			entt::entity entity = registry.create();
 			registry.emplace<TransformComponent>(entity, camPos);
@@ -462,7 +462,7 @@ void Game::Update(float _deltaTime, float totalTime)
 		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
 		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
+		BodyID id = physicsManager->CreateSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
 		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
 
 		entt::entity shotEntity = registry.create();
