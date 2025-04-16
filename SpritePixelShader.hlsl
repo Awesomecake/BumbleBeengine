@@ -29,7 +29,10 @@ SamplerState BasicSampler : register(s0);
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {        
-    float3 albedoColor = Albedo.Sample(BasicSampler, float2(input.uv.x * (rectWidth / imgWidth) + xOffset, input.uv.y * (rectHeight / imgHeight) + yOffset)).rgb;
- 
-    return float4(surfaceColor.xyz * albedoColor, 1);
+    float4 albedoColor = Albedo.Sample(BasicSampler, float2(input.uv.x * (rectWidth / imgWidth) + xOffset, input.uv.y * (rectHeight / imgHeight) + yOffset));
+
+    if (albedoColor.w < 0.01f)
+        discard;
+
+    return albedoColor;
 }

@@ -10,6 +10,8 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 
+#include "nlohmann/json.hpp"
+
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
@@ -166,9 +168,9 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
 	physicsManager = new PhysicsManager();
-	BodyID sphere1 = physicsManager->CreatePhysicsSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic);
+	BodyID sphere1 = physicsManager->CreateSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic);
 	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
-	BodyID sphere2 = physicsManager->CreatePhysicsSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic);
+	BodyID sphere2 = physicsManager->CreateSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
@@ -183,6 +185,9 @@ void Game::Init()
 	registry.emplace<MeshComponent>(testEntity2, sphere);
 	registry.emplace<MaterialComponent>(testEntity2, materials[0]);
 	registry.emplace<PhysicsComponent>(testEntity2, sphere2);
+
+	// Serialize the registry to JSON as a test.
+	nlohmann::json;
 
 #pragma region Constructing Lights
 	entt::entity light1 = registry.create();
@@ -299,7 +304,7 @@ void Game::InitializeInputActions()
 			XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
 			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-			BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
+			BodyID id = physicsManager->CreateSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
 
 			entt::entity entity = registry.create();
 			registry.emplace<TransformComponent>(entity, camPos);
@@ -457,7 +462,7 @@ void Game::Update(float _deltaTime, float totalTime)
 		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
 		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
-		BodyID id = physicsManager->CreatePhysicsSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
+		BodyID id = physicsManager->CreateSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
 		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
 
 		entt::entity shotEntity = registry.create();

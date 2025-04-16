@@ -235,8 +235,8 @@ public:
 
 	void JoltPhysicsFrame();
 	void DeInitPhysics();
-	BodyID CreatePhysicsSphereBody(RVec3 position, float size, EMotionType motionType);
-	BodyID CreatePhysicsCubeBody(RVec3 position, Vec3 size, EMotionType motionType);
+	BodyID CreateSphereBody(RVec3 position, float size, EMotionType motionType, JPH::EAllowedDOFs degreesOfFreedom = JPH::EAllowedDOFs::All);
+	BodyID CreateCubeBody(RVec3 position, Vec3 size, EMotionType motionType);
 	void AddBodyVelocity(BodyID body, Vec3 velocity);
 	void SetBodyPosition(BodyID body, RVec3 position, JPH::EActivation activationType);
 	void SetBodyRotation(BodyID body, Quat rotation, JPH::EActivation activationType);

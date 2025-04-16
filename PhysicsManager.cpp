@@ -56,7 +56,7 @@ PhysicsManager::PhysicsManager()
 	ShapeRefC floor_shape = floor_shape_result.Get(); // We don't expect an error here, but you can check floor_shape_result for HasError() / GetError()
 
 	// Create the settings for the body itself. Note that here you can also set other properties like the restitution / friction.
-	BodyCreationSettings floor_settings(floor_shape, RVec3(0.0_r, -7.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);
+	BodyCreationSettings floor_settings(floor_shape, RVec3(0.0_r, -7.0_r, 0.0_r), Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING);	
 
 	// Create the actual rigid body
 	floor = body_interface->CreateBody(floor_settings); // Note that if we run out of bodies this can return nullptr
@@ -118,22 +118,25 @@ void PhysicsManager::JoltPhysicsFrame()
 }
 
 //creates a sphere body and adds it to the physics sim
-BodyID PhysicsManager::CreatePhysicsSphereBody(RVec3 position, float size, EMotionType motionType)
+BodyID PhysicsManager::CreateSphereBody(RVec3 position, float size, EMotionType motionType, JPH::EAllowedDOFs degreesOfFreedom)
 {
 	// Now create a dynamic body to bounce on the floor
 	// Note that this uses the shorthand version of creating and adding a body to the world
 	BodyCreationSettings sphere_settings(new SphereShape(size), position, Quat::sIdentity(), motionType, Layers::MOVING);
+	sphere_settings.mAllowedDOFs = JPH::EAllowedDOFs::All;
+
 	BodyID newSphereID = body_interface->CreateAndAddBody(sphere_settings, EActivation::Activate);
 	bodies.push_back(newSphereID);
 	return newSphereID;
 }
 
 //creates a cube body and adds it to the physics sim
-BodyID PhysicsManager::CreatePhysicsCubeBody(RVec3 position, Vec3 size, EMotionType motionType)
+BodyID PhysicsManager::CreateCubeBody(RVec3 position, Vec3 size, EMotionType motionType)
 {
 	// Now create a dynamic body to bounce on the floor
 	// Note that this uses the shorthand version of creating and adding a body to the world
 	BodyCreationSettings cube_settings(new BoxShape(size), position, Quat::sIdentity(), motionType, Layers::MOVING);
+
 	BodyID newSphereID = body_interface->CreateAndAddBody(cube_settings, EActivation::Activate);
 	bodies.push_back(newSphereID);
 

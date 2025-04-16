@@ -551,12 +551,6 @@
     <ClCompile Include="Systems.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Canvas.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CanvasObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Emitter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1525,12 +1519,6 @@
     <ClInclude Include="Systems.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Canvas.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CanvasObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Emitter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1583,6 +1571,9 @@
     </FxCompile>
     <FxCompile Include="PostProcessChromaticAberrationPS.hlsl">
       <Filter>Shaders\PostProcessing</Filter>
+    </FxCompile>
+    <FxCompile Include="SpritePixelShader.hlsl">
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
