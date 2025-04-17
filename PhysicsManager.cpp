@@ -138,10 +138,10 @@ BodyID PhysicsManager::CreateCubeBody(RVec3 position, Vec3 size, EMotionType mot
 	BodyCreationSettings cube_settings(new BoxShape(size), position, Quat::sIdentity(), motionType, Layers::MOVING);
 	cube_settings.mAllowedDOFs = degreesOfFreedom;
 
-	BodyID newSphereID = body_interface->CreateAndAddBody(cube_settings, EActivation::Activate);
-	bodies.push_back(newSphereID);
+	BodyID newCubeID = body_interface->CreateAndAddBody(cube_settings, EActivation::Activate);
+	bodies.push_back(newCubeID);
 
-	return newSphereID;
+	return newCubeID;
 }
 
 //Raycasts from a given point in a given direction

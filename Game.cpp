@@ -84,6 +84,7 @@ void Game::Init()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
+	physicsManager = new PhysicsManager();
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -167,7 +168,6 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 45.f, XMFLOAT3(0, 0.5, -5)));
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
-	physicsManager = new PhysicsManager();
 	BodyID sphere1 = physicsManager->CreateCubeBody(RVec3(0.1_r, 0.0_r, 0.1_r), Vec3(1,1,1), EMotionType::Dynamic, JPH::EAllowedDOFs::Plane2D);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
@@ -403,6 +403,8 @@ void Game::CreateGeometry()
 	registry.emplace<TransformComponent>(entity1, XMFLOAT3(-9, -3, 0));
 	registry.emplace<MeshComponent>(entity1, cube);
 	registry.emplace<MaterialComponent>(entity1, materials[0]);
+	BodyID testCube = physicsManager->CreateCubeBody(RVec3(-9, -3, 0), Vec3(1, 1, 1), EMotionType::Static);
+	registry.emplace<PhysicsComponent>(entity1, testCube);
 
 	entt::entity entity2 = registry.create();
 	registry.emplace<TransformComponent>(entity2, XMFLOAT3(-6, -3, 0));
