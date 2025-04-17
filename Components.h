@@ -2,7 +2,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include <memory>
-#include "AudioManager.h"
+#include <x3daudio.h>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
@@ -178,9 +178,29 @@ struct LightComponent
 //
 //};
 
-struct AudioComponent
+struct AudioListenerComponent
 {
 public:
-	std::shared_ptr<Audio> audio;
-};
+	void UpdateListener(X3DAUDIO_VECTOR front, X3DAUDIO_VECTOR up, X3DAUDIO_VECTOR pos,
+		X3DAUDIO_VECTOR vel)
+	{
+		listener->OrientFront = transform->GetForward();
+		listener->OrientTop = transform->GetUp();
+		listener->Position = transform->GetPosition();
+		//listener->Velocity = vel;
+	}
 
+	AudioListenerComponent(TransformEuler* transformEuler)
+	{
+		transform = transformEuler;
+	}
+
+	X3DAUDIO_LISTENER* GetListener()
+	{
+		return listener.get();
+	}
+
+private:
+	std::shared_ptr<X3DAUDIO_LISTENER> listener;
+	TransformEuler* transform;
+};

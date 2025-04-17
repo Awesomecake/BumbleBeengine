@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 #include "Input.h"
+#include "Components.h"
+#include "Systems.h"
 
 #ifdef _XBOX //Big-Endian
 #define fourccRIFF 'RIFF'
@@ -146,6 +148,8 @@ struct XAudioVoice : IXAudio2VoiceCallback
 public:
 	bool playing = false;
 	bool isPositional = false;
+	//TransformComponent* transform = nullptr;
+	X3DAUDIO_VECTOR pos;
 	IXAudio2SourceVoice* voice;
 
 	X3DAUDIO_EMITTER* GetEmitter()
@@ -159,13 +163,12 @@ public:
 		emitter.CurveDistanceScaler = emitter.DopplerScaler = 1.0f;
 	}
 
-	void UpdateEmitter(X3DAUDIO_VECTOR front, X3DAUDIO_VECTOR up, X3DAUDIO_VECTOR pos,
-		X3DAUDIO_VECTOR vel)
+	void UpdateEmitter()
 	{
-		emitter.OrientFront = front;
-		emitter.OrientTop = up;
+		//emitter.OrientFront = Systems::GetForward(*transform);
+		//emitter.OrientTop = Systems::GetUp(X3DAUDIO_);
 		emitter.Position = pos;
-		emitter.Velocity = vel;
+		//emitter.Velocity = vel;
 	}
 
 	void OnStreamEnd() noexcept
@@ -209,9 +212,12 @@ public:
 	AudioManager();
 	~AudioManager();
 	void playSound(const char filePath[MAX_SOUND_PATH_LENGTH]);
+	void playSound(const char filePath[MAX_SOUND_PATH_LENGTH], //TransformComponent* transform);
+		X3DAUDIO_VECTOR pos);
 	Sound* create_sound(const char filePath[MAX_SOUND_PATH_LENGTH]);
 	void cache_sound(Sound* sound);
 	void update_audio(float dt);
+	void SetMainListener(AudioListenerComponent* listener);
 	void UpdateListener(X3DAUDIO_VECTOR front, X3DAUDIO_VECTOR up, X3DAUDIO_VECTOR pos,
 		X3DAUDIO_VECTOR vel);
 
@@ -221,7 +227,8 @@ private:
 	IXAudio2* xAudio2;
 	X3DAUDIO_HANDLE X3DInstance;
 	X3DAUDIO_DSP_SETTINGS DSPSettings;
-	X3DAUDIO_LISTENER mainListener;
+	AudioListenerComponent* mainListener;
+	IXAudio2MasteringVoice* masteringVoice;
 	bool init();
 	HRESULT FindChunk(HANDLE hFile, DWORD fourcc, DWORD& dwChunkSize, DWORD& dwChunkDataPosition);
 	HRESULT ReadChunkData(HANDLE hFile, void* buffer, DWORD buffersize, DWORD bufferoffset);

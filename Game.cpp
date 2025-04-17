@@ -71,7 +71,7 @@ Game::~Game()
 
 // Function to be called by the delegate
 void CollisionCallback(AudioManager* audioManager) {
-	//audioManager->playSound("Sounds/vine-boom.wav");
+	audioManager->playSound("Sounds/vine-boom.wav", {-3, -3, -3});
 }
 
 // --------------------------------------------------------

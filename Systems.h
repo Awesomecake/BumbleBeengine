@@ -9,9 +9,9 @@ static class Systems
 public:
 	static DirectX::XMFLOAT4X4	CalcWorldMatrix(TransformComponent& transform_comp);
 	static DirectX::XMFLOAT4X4 CalcWorldInverseTransposeMatrix(TransformComponent& transform_comp);
-	DirectX::XMFLOAT3 GetRight(TransformComponent& transform_comp);
-	DirectX::XMFLOAT3 GetUp(TransformComponent& transform_comp);
-	DirectX::XMFLOAT3 GetForward(TransformComponent& transform_comp);
+	static DirectX::XMFLOAT3 GetRight(TransformComponent& transform_comp);
+	static DirectX::XMFLOAT3 GetUp(TransformComponent& transform_comp);
+	static DirectX::XMFLOAT3 GetForward(TransformComponent& transform_comp);
 
 	static void UpdateTransformFromPhysicsBody(PhysicsManager* physicsManager, PhysicsComponent& physics_comp, TransformComponent& transform_comp);
 
