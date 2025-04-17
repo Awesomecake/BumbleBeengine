@@ -6,6 +6,8 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
+#include "nlohmann/json.hpp"
+
 #pragma region tempHeaders
 #include "Camera.h"
 #include <WICTextureLoader.h>
@@ -17,11 +19,17 @@
 struct MeshComponent
 {
 	std::shared_ptr<Mesh> mesh;
+
+	// Define types for JSON Serialization
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(MeshComponent, mesh)
 };
 
 struct MaterialComponent
 {
 	std::shared_ptr<Material> material;
+
+	// Define types for JSON Serialization
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(MaterialComponent, material)
 };
 
 struct SpriteComponent
@@ -78,16 +86,23 @@ private:
 	DirectX::XMFLOAT4 quaternion;
 
 	bool isDirty;
+
+	// Define types for JSON Serialization
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(TransformComponent, worldMatrix, worldInverseTransposeMatrix, position, scale, quaternion, isDirty)
 };
 
 struct PhysicsComponent
 {
 	JPH::BodyID bodyID;
+
+	// Define types for JSON Serialization
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(PhysicsComponent, bodyID)
 };
 
 struct CameraComponent
 {
-
+	// Define types for JSON Serialization
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent)
 };
 
 struct SkyBoxComponent
@@ -137,6 +152,9 @@ public:
 
 	DirectX::XMFLOAT3 ambient;
 	bool isUsed;
+
+	// Define types for JSON Serialization
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(SkyBoxComponent, sampleState, stencilState,rasterizerState, cubeMapTexture, mesh, ps, vs, ambient, isUsed)
 };
 
 #define LIGHT_TYPE_DIRECTIONAL 0
@@ -170,6 +188,9 @@ struct LightComponent
 	float SpotFalloff;
 	bool isShadowMap;
 	DirectX::XMFLOAT2 Padding;
+
+	// Define types for JSON Serialization
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(LightComponent, Type, Direction, Range, Position, Intensity, Color, SpotFalloff, isShadowMap, Padding)
 };
 
 //struct ScriptComponent
@@ -179,6 +200,7 @@ struct LightComponent
 
 struct AudioComponent
 {
-
+	// Define types for JSON Serialization
+	NLOHMANN_DEFINE_TYPE_INTRUSIVE(AudioComponent)
 };
 
