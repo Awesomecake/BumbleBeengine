@@ -135,7 +135,11 @@ void Game::Init()
 	
 	CreateGeometry();
 
-	testSprite = std::make_shared<Sprite>(quad, spriteMat);
+	//create a draw rect for the sprite
+	drawRect = std::make_shared<DrawRect>(128, 80, 1280, 800);
+
+	// Create a sprite
+	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect);
 
 	entt::entity skyEntity = registry.create();
 	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);

@@ -63,6 +63,7 @@ public:
 
 	//Sprites
 	std::shared_ptr<Sprite> testSprite;
+	std::shared_ptr<DrawRect> drawRect;
 
 	//Materials
 	std::vector<std::shared_ptr<Material>> materials;
