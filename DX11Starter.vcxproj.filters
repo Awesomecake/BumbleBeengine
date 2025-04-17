@@ -60,6 +60,12 @@
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{bd370690-b53a-4413-b988-434a1e29d105}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\UI\Canvas">
+      <UniqueIdentifier>{156c8232-77c8-4d80-8098-c38b81c28cca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI\Canvas">
+      <UniqueIdentifier>{326b16f3-6e90-48f7-a2c5-b4d81316988b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -557,11 +563,14 @@
     <ClCompile Include="Sprite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UI\Canvas.cpp">
+    <ClCompile Include="UIManager.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UI\CanvasObject.cpp">
+    <ClCompile Include="UICanvas.cpp">
       <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="TestCanvas.cpp">
+      <Filter>Source Files\UI\Canvas</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1525,19 +1534,10 @@
     <ClInclude Include="Sprite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\CanvasObject.h">
+    <ClInclude Include="UIManager.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="UI\Canvas.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UI.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\CanvasObject3.h">
+    <ClInclude Include="UICanvas.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
   </ItemGroup>
