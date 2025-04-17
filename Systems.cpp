@@ -98,6 +98,7 @@ void Systems::UpdateTransformFromPhysicsBody(PhysicsManager* physicsManager, Phy
 }
 #pragma endregion
 
+#pragma region SkyboxLogic
 void Systems::DrawSkyBox(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera, SkyBoxComponent skybox_comp)
 {
 	context->RSSetState(skybox_comp.GetRasterizerState().Get());
@@ -213,3 +214,4 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Systems::CreateCubeMap(
 	// Send back the SRV, which is what we need for our shaders
 	return cubeSRV;
 }
+#pragma endregion

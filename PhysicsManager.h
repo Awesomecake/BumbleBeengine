@@ -236,10 +236,12 @@ public:
 	void JoltPhysicsFrame();
 	void DeInitPhysics();
 	BodyID CreateSphereBody(RVec3 position, float size, EMotionType motionType, JPH::EAllowedDOFs degreesOfFreedom = JPH::EAllowedDOFs::All);
-	BodyID CreateCubeBody(RVec3 position, Vec3 size, EMotionType motionType);
+	BodyID CreateCubeBody(RVec3 position, Vec3 size, EMotionType motionType, JPH::EAllowedDOFs degreesOfFreedom = JPH::EAllowedDOFs::All);
+
 	void AddBodyVelocity(BodyID body, Vec3 velocity);
 	void SetBodyPosition(BodyID body, RVec3 position, JPH::EActivation activationType);
 	void SetBodyRotation(BodyID body, Quat rotation, JPH::EActivation activationType);
+
 	AllHitCollisionCollector<RayCastBodyCollector>  JoltRayCast(Vec3::ArgType origin, Vec3Arg direction, float length);
 	AllHitCollisionCollector<CollideShapeBodyCollector> JoltShapeCast(Vec3Arg min, Vec3Arg max, Vec3Arg direction);
 

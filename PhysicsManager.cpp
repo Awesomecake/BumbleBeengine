@@ -123,7 +123,7 @@ BodyID PhysicsManager::CreateSphereBody(RVec3 position, float size, EMotionType 
 	// Now create a dynamic body to bounce on the floor
 	// Note that this uses the shorthand version of creating and adding a body to the world
 	BodyCreationSettings sphere_settings(new SphereShape(size), position, Quat::sIdentity(), motionType, Layers::MOVING);
-	sphere_settings.mAllowedDOFs = JPH::EAllowedDOFs::All;
+	sphere_settings.mAllowedDOFs = degreesOfFreedom;
 
 	BodyID newSphereID = body_interface->CreateAndAddBody(sphere_settings, EActivation::Activate);
 	bodies.push_back(newSphereID);
@@ -131,11 +131,12 @@ BodyID PhysicsManager::CreateSphereBody(RVec3 position, float size, EMotionType 
 }
 
 //creates a cube body and adds it to the physics sim
-BodyID PhysicsManager::CreateCubeBody(RVec3 position, Vec3 size, EMotionType motionType)
+BodyID PhysicsManager::CreateCubeBody(RVec3 position, Vec3 size, EMotionType motionType, JPH::EAllowedDOFs degreesOfFreedom)
 {
 	// Now create a dynamic body to bounce on the floor
 	// Note that this uses the shorthand version of creating and adding a body to the world
 	BodyCreationSettings cube_settings(new BoxShape(size), position, Quat::sIdentity(), motionType, Layers::MOVING);
+	cube_settings.mAllowedDOFs = degreesOfFreedom;
 
 	BodyID newSphereID = body_interface->CreateAndAddBody(cube_settings, EActivation::Activate);
 	bodies.push_back(newSphereID);

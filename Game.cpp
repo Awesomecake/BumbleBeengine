@@ -168,9 +168,9 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
 	physicsManager = new PhysicsManager();
-	BodyID sphere1 = physicsManager->CreateSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic);
+	BodyID sphere1 = physicsManager->CreateSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic, JPH::EAllowedDOFs::Plane2D);
 	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
-	BodyID sphere2 = physicsManager->CreateSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic);
+	BodyID sphere2 = physicsManager->CreateSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic, JPH::EAllowedDOFs::Plane2D);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
@@ -205,7 +205,6 @@ void Game::Init()
 	entt::entity light4 = registry.create();
 	//Type, Direction, Range, Position, Intensity, Color, SpotFallOff
 	registry.emplace<LightComponent>(light4, LIGHT_TYPE_DIRECTIONAL, XMFLOAT3(0, 0, -1), 0, XMFLOAT3(0, 0, 0), 1, XMFLOAT3(0, 1, 1), 0, false);
-
 #pragma endregion
 
 	shadowMap.MakeProjection(XMFLOAT3(0, -1, -1));
@@ -305,16 +304,13 @@ void Game::InitializeInputActions()
 			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
 			BodyID id = physicsManager->CreateSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
-
-			entt::entity entity = registry.create();
-			registry.emplace<TransformComponent>(entity, camPos);
-			registry.emplace<MeshComponent>(entity, sphere);
-			registry.emplace<MaterialComponent>(entity, materials[matLocation]);
-			registry.emplace<PhysicsComponent>(entity, id);
-
-			registry.get<TransformComponent>(entity).SetScale(DirectX::XMFLOAT3(0.5, 0.5, 0.5));
-
 			physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+
+			entt::entity shotEntity = registry.create();
+			registry.emplace<TransformComponent>(shotEntity, camPos, XMFLOAT3(0.5, 0.5, 0.5));
+			registry.emplace<MeshComponent>(shotEntity, sphere);
+			registry.emplace<MaterialComponent>(shotEntity, materials[matLocation]);
+			registry.emplace<PhysicsComponent>(shotEntity, id);
 		}
 	});
 
@@ -454,23 +450,6 @@ void Game::Update(float _deltaTime, float totalTime)
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 	
 #pragma region Physics System
-
-	if (InputManager::KeyPress(VK_DELETE))
-	{
-		int matLocation = rand() % materials.size();
-
-		XMFLOAT3 camPos = cameras[selectedCamera]->GetTransform().GetPosition();
-		XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
-
-		BodyID id = physicsManager->CreateSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
-		physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
-
-		entt::entity shotEntity = registry.create();
-		registry.emplace<TransformComponent>(shotEntity, camPos, XMFLOAT3(0.5, 0.5, 0.5));
-		registry.emplace<MeshComponent>(shotEntity, sphere);
-		registry.emplace<MaterialComponent>(shotEntity, materials[matLocation]);
-		registry.emplace<PhysicsComponent>(shotEntity, id);
-	}
 
 	if (InputManager::KeyPress(VK_INSERT))
 	{
