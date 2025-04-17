@@ -11,6 +11,7 @@
 #include "ImGui/imgui_impl_win32.h"
 
 #include "nlohmann/json.hpp"
+#include "NJSONOutputArchive.cpp"
 
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
@@ -187,7 +188,17 @@ void Game::Init()
 	registry.emplace<PhysicsComponent>(testEntity2, sphere2);
 
 	// Serialize the registry to JSON as a test.
-	nlohmann::json;
+	// Create scope
+	{
+		NJSONOutputArchive json_archive;
+
+		entt::basic_snapshot snapshot(registry);
+		snapshot.get<entt::entity>(json_archive); //.get<PhysicsComponent>(json_archive);
+
+		json_archive.Close();
+		std::string json_output = json_archive.AsString();
+		printf("json:%s\n\n", json_output.c_str());
+	}
 
 #pragma region Constructing Lights
 	entt::entity light1 = registry.create();

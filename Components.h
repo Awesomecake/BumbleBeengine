@@ -102,7 +102,7 @@ struct PhysicsComponent
 struct CameraComponent
 {
 	// Define types for JSON Serialization
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent)
+	//NLOHMANN_DEFINE_TYPE_INTRUSIVE(CameraComponent)
 };
 
 struct SkyBoxComponent
@@ -201,6 +201,6 @@ struct LightComponent
 struct AudioComponent
 {
 	// Define types for JSON Serialization
-	NLOHMANN_DEFINE_TYPE_INTRUSIVE(AudioComponent)
+	//NLOHMANN_DEFINE_TYPE_INTRUSIVE(AudioComponent)
 };
 
