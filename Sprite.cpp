@@ -1,14 +1,17 @@
 #include "Sprite.h"
 
-Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material)
+#define Sprite_Assets L"../../Assets/SpriteSheets/"
+
+Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material, std::shared_ptr<DrawRect> _drawRect)
 {
 	mesh = refMesh;
 	material = _material;
 
 	//hard coded values for testing rn
-	drawRect = std::make_shared<DrawRect>(0, 0, 128, 80, 1280, 800);
+	drawRect = _drawRect;
 	
 }
+
 
 
 Sprite::~Sprite()

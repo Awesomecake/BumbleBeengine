@@ -84,6 +84,7 @@ void Game::Init()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
+	physicsManager = new PhysicsManager();
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -135,7 +136,11 @@ void Game::Init()
 	
 	CreateGeometry();
 
-	testSprite = std::make_shared<Sprite>(quad, spriteMat);
+	//create a draw rect for the sprite
+	drawRect = std::make_shared<DrawRect>(128, 80, 1280, 800);
+
+	// Create a sprite
+	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect);
 
 	entt::entity skyEntity = registry.create();
 	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);
@@ -167,24 +172,15 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 45.f, XMFLOAT3(0, 0.5, -5)));
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
-	physicsManager = new PhysicsManager();
-	BodyID sphere1 = physicsManager->CreateSphereBody(RVec3(0.0_r, 20.0_r, 0.0_r), 1, EMotionType::Dynamic, JPH::EAllowedDOFs::Plane2D);
-	physicsManager->AddBodyVelocity(sphere1, Vec3(0.0f, -5.0f, 0.0f));
-	BodyID sphere2 = physicsManager->CreateSphereBody(RVec3(0.1_r, 0.0_r, 0.1_r), 1, EMotionType::Dynamic, JPH::EAllowedDOFs::Plane2D);
+	BodyID sphere1 = physicsManager->CreateCubeBody(RVec3(0.1_r, 0.0_r, 0.1_r), Vec3(1,1,1), EMotionType::Dynamic, JPH::EAllowedDOFs::Plane2D);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
-	entt::entity testEntity = registry.create();
-	registry.emplace<TransformComponent>(testEntity, XMFLOAT3(0, 20, 0));
-	registry.emplace<MeshComponent>(testEntity, sphere);
-	registry.emplace<MaterialComponent>(testEntity, materials[0]);
-	registry.emplace<PhysicsComponent>(testEntity, sphere1);
-
-	entt::entity testEntity2 = registry.create();
-	registry.emplace<TransformComponent>(testEntity2, XMFLOAT3(0,0,0));
-	registry.emplace<MeshComponent>(testEntity2, sphere);
-	registry.emplace<MaterialComponent>(testEntity2, materials[0]);
-	registry.emplace<PhysicsComponent>(testEntity2, sphere2);
+	entity2D = registry.create();
+	registry.emplace<TransformComponent>(entity2D, XMFLOAT3(0, 20, 0));
+	registry.emplace<MeshComponent>(entity2D, cube);
+	registry.emplace<MaterialComponent>(entity2D, materials[0]);
+	registry.emplace<PhysicsComponent>(entity2D, sphere1);
 
 	// Serialize the registry to JSON as a test.
 	nlohmann::json;
@@ -240,6 +236,7 @@ void Game::LoadShaders()
 
 void Game::InitializeInputActions()
 {
+#pragma region CameraInputs
 	InputActionManager::CreateAction(L"Look");
 	InputActionManager::AssignBindingToAction(L"Look", InputActionManager::InputBindings::XControllerRightStick);
 
@@ -304,7 +301,7 @@ void Game::InitializeInputActions()
 			XMFLOAT3 camForward = cameras[selectedCamera]->GetTransform().GetForward();
 
 			BodyID id = physicsManager->CreateSphereBody(Vec3(camPos.x, camPos.y, camPos.z), 0.5, EMotionType::Dynamic);
-			physicsManager->AddBodyVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
+			physicsManager->body_interface->AddLinearVelocity(id, Vec3(camForward.x * 10, camForward.y * 10, camForward.z * 10));
 
 			entt::entity shotEntity = registry.create();
 			registry.emplace<TransformComponent>(shotEntity, camPos, XMFLOAT3(0.5, 0.5, 0.5));
@@ -313,7 +310,46 @@ void Game::InitializeInputActions()
 			registry.emplace<PhysicsComponent>(shotEntity, id);
 		}
 	});
+#pragma endregion
 
+	InputActionManager::CreateAction(L"Jump");
+	InputActionManager::AssignBindingToAction(L"Jump", InputActionManager::InputBindings::KeyI);
+
+	InputActionManager::GetAction(L"Jump").OnTrigger.push_back([&](InputActionManager::InputData data)
+		{
+			if (data.inputType == InputActionManager::InputType::Pressed && (data.controllerIndex == CONTROLLER_1 || data.controllerIndex == NOT_A_CONTROLLER))
+			{
+				JPH::BodyID bodyid = registry.get<PhysicsComponent>(entity2D).bodyID;
+				JPH::Vec3 velocity = physicsManager->body_interface->GetLinearVelocity(bodyid);
+
+				if(velocity.GetY() < 0)
+					physicsManager->body_interface->AddLinearVelocity(bodyid, Vec3(0, 5 - velocity.GetY(), 0));
+				else
+					physicsManager->body_interface->AddLinearVelocity(bodyid, Vec3(0, 5, 0));
+
+			}
+		});
+
+	InputActionManager::CreateAction(L"Walk");
+	InputActionManager::AssignBindingToAction(L"Walk", InputActionManager::InputBindings::KeyJ);
+	InputActionManager::AssignBindingToAction(L"Walk", InputActionManager::InputBindings::KeyL);
+
+	InputActionManager::GetAction(L"Walk").OnTrigger.push_back([&](InputActionManager::InputData data)
+		{
+			if (data.inputType == InputActionManager::InputType::Down)
+			{
+				JPH::BodyID bodyid = registry.get<PhysicsComponent>(entity2D).bodyID;
+				JPH::Vec3 velocity = physicsManager->body_interface->GetLinearVelocity(bodyid);
+				if (data.key == InputActionManager::InputBindings::KeyJ && velocity.GetX() > -3)
+				{
+					physicsManager->body_interface->AddLinearVelocity(bodyid, Vec3(-10.f * deltaTime, 0, 0));
+				}
+				if (data.key == InputActionManager::InputBindings::KeyL && velocity.GetX() < 3)
+				{
+					physicsManager->body_interface->AddLinearVelocity(bodyid, Vec3(10.f * deltaTime, 0, 0));
+				}
+			}
+		});
 }
 
 std::shared_ptr<Material> Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile)
@@ -371,6 +407,8 @@ void Game::CreateGeometry()
 	registry.emplace<TransformComponent>(entity1, XMFLOAT3(-9, -3, 0));
 	registry.emplace<MeshComponent>(entity1, cube);
 	registry.emplace<MaterialComponent>(entity1, materials[0]);
+	BodyID testCube = physicsManager->CreateCubeBody(RVec3(-9, -3, 0), Vec3(1, 1, 1), EMotionType::Static);
+	registry.emplace<PhysicsComponent>(entity1, testCube);
 
 	entt::entity entity2 = registry.create();
 	registry.emplace<TransformComponent>(entity2, XMFLOAT3(-6, -3, 0));

@@ -63,6 +63,7 @@ public:
 
 	//Sprites
 	std::shared_ptr<Sprite> testSprite;
+	std::shared_ptr<DrawRect> drawRect;
 
 	//Materials
 	std::vector<std::shared_ptr<Material>> materials;
@@ -124,5 +125,6 @@ private:
 
 	entt::registry registry;
 
+	entt::entity entity2D;
 };
 

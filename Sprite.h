@@ -16,10 +16,12 @@ struct DrawRect
 	float imgWidth;
 	float imgHeight;
 
-	DrawRect(float xOff, float yOff, float rectW, float rectH, float imgW, float imgH)
-		: xOffset(xOff), yOffset(yOff), rectWidth(rectW), rectHeight(rectH), imgWidth(imgW), imgHeight(imgH) {}
+	DrawRect(float rectW, float rectH, float imgW, float imgH)
+		: xOffset(0), yOffset(0), rectWidth(rectW), rectHeight(rectH), imgWidth(imgW), imgHeight(imgH) {}
 	// Constructor to initialize the struct with default values
 	DrawRect() : xOffset(0), yOffset(0), rectWidth(0), rectHeight(0), imgWidth(0), imgHeight(0) {}
+
+
 };
 
 struct AnimationData {
@@ -33,6 +35,10 @@ struct AnimationDataDictionary {
 	std::shared_ptr<std::vector<AnimationData>> dictionary;
 	int currentAnimationIndex;
 	int currentFrameIndex;
+	
+	AnimationDataDictionary(std::shared_ptr<std::vector<AnimationData>> dict)
+		: dictionary(dict), currentAnimationIndex(0), currentFrameIndex(0) {}
+	AnimationDataDictionary() : currentAnimationIndex(0), currentFrameIndex(0) {}
 };
 
 class Sprite
@@ -45,8 +51,8 @@ private:
 
 public:
 
-	Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material);
-	Sprite() {}
+	Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material, std::shared_ptr<DrawRect> _drawRect);
+	//Sprite() {}
 	~Sprite();
 	std::shared_ptr<Mesh> GetMesh();
 	TransformEuler& GetTransform();
