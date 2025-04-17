@@ -124,5 +124,6 @@ private:
 
 	entt::registry registry;
 
+	entt::entity entity2D;
 };
 

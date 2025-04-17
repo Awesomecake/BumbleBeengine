@@ -144,26 +144,6 @@ BodyID PhysicsManager::CreateCubeBody(RVec3 position, Vec3 size, EMotionType mot
 	return newSphereID;
 }
 
-//Applied velocity to a given body in the sim
-void PhysicsManager::AddBodyVelocity(BodyID body, Vec3 velocity)
-{
-	// Now you can interact with the dynamic body, in this case we're going to give it a velocity.
-	// (note that if we had used CreateBody then we could have set the velocity straight on the body before adding it to the physics system)
-	body_interface->SetLinearVelocity(body, velocity);
-}
-
-// EActivation::DontActivate
-void PhysicsManager::SetBodyPosition(BodyID body, RVec3 position, JPH::EActivation activationType)
-{
-	body_interface->SetPosition(body, position, activationType);
-}
-
-void PhysicsManager::SetBodyRotation(BodyID body, Quat rotation, JPH::EActivation activationType)
-{
-	body_interface->SetRotation(body, rotation, activationType);
-}
-
-
 //Raycasts from a given point in a given direction
 //Returns a list of all physics objects hit by the ray
 AllHitCollisionCollector<RayCastBodyCollector> PhysicsManager::JoltRayCast(Vec3::ArgType origin, Vec3Arg direction, float length)
