@@ -18,6 +18,19 @@ public:
 	void Update();
 	void OpenCanvas(const string& canvasName);
 	void CloseCanvas(const string& canvasName);
+	inline void addCanvas(const string& canvasName, UICanvas* canvas)
+	{
+		uiElements[canvasName] = canvas;
+	}
+	inline void removeCanvas(const string& canvasName)
+	{
+		auto keyValue = uiElements.find(canvasName);
+		if (keyValue != uiElements.end())
+		{
+			delete keyValue->second;
+			uiElements.erase(keyValue);
+		}
+	}
 private:
 	vector<UICanvas*> canvasStack;
 	unordered_map<string, UICanvas*> uiElements;

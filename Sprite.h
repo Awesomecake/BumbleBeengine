@@ -56,6 +56,7 @@ private:
 	std::shared_ptr<Mesh> mesh;
 	std::shared_ptr<Material> material;
 	std::shared_ptr<DrawRect> drawRect;
+	float timeElapsed;
 
 public:
 

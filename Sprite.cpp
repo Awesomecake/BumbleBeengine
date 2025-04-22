@@ -10,6 +10,7 @@ Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _materia
 	//hard coded values for testing rn
 	drawRect = _drawRect;
 	animationDataDictionary = CreateAnimDataDictionary(_drawRect);
+	timeElapsed = 0.0f;
 	
 }
 
@@ -37,7 +38,18 @@ std::shared_ptr<Material> Sprite::GetMaterial()
 
 void Sprite::Update(float deltaTime) 
 {
-
+	timeElapsed += deltaTime;
+	if (timeElapsed >= 1/(animationDataDictionary->dictionary->at(animationDataDictionary->currentAnimationIndex).frameRate))
+	{
+		timeElapsed = 0.0f;
+		animationDataDictionary->currentFrameIndex++;
+		if (animationDataDictionary->currentFrameIndex >= animationDataDictionary->dictionary->at(animationDataDictionary->currentAnimationIndex).animation->size())
+		{
+			animationDataDictionary->currentFrameIndex = 0;
+		}
+		drawRect->xOffset = std::get<1>(animationDataDictionary->dictionary->at(animationDataDictionary->currentAnimationIndex).animation->at(animationDataDictionary->currentFrameIndex));
+		drawRect->yOffset = std::get<0>(animationDataDictionary->dictionary->at(animationDataDictionary->currentAnimationIndex).animation->at(animationDataDictionary->currentFrameIndex));
+	}
 }
 
 void Sprite::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera)

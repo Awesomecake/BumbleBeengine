@@ -321,6 +321,7 @@
   <ItemGroup>
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Canvases.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="Emitter.h" />

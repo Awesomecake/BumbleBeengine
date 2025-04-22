@@ -1,30 +1,23 @@
-#include "UICanvas.h"
+#include "Canvases.h"
+#include <iostream>
 
-class TestCanvas : public UICanvas
+void TestCanvas::Render()
 {
-public:
-	TestCanvas();
-	~TestCanvas();
-};
-
-void UICanvas::Render()
-{
-	ImGui::Begin(name.c_str(), &isRendering);
+	ImGui::Begin("Test");
 	ImGui::Text("This is a test canvas.");
 	ImGui::End();
 }
 
-void UICanvas::Update()
+void TestCanvas::Update()
+{
+}
+
+void TestCanvas::OnOpen()
 {
 	
 }
 
-void UICanvas::OnOpen()
-{
-	
-}
-
-void UICanvas::OnClose()
+void TestCanvas::OnClose()
 {
 
 }
