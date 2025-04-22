@@ -2,14 +2,14 @@
 
 #define Sprite_Assets L"../../Assets/SpriteSheets/"
 
-Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material, std::shared_ptr<DrawRect> _drawRect)
+Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material, std::shared_ptr<DrawRect> _drawRect, std::shared_ptr<std::vector<int>> animFrameCounts)
 {
 	mesh = refMesh;
 	material = _material;
 	scale = 1;
 	//hard coded values for testing rn
 	drawRect = _drawRect;
-	animationDataDictionary = CreateAnimDataDictionary(_drawRect);
+	animationDataDictionary = CreateAnimDataDictionary(_drawRect, animFrameCounts);
 	timeElapsed = 0.0f;
 	
 }
@@ -95,19 +95,22 @@ void Sprite::SetDrawRect(float column, float row, float rectW, float rectH, floa
 	drawRect->imgHeight = imgH;
 }
 
-static std::shared_ptr<AnimationDataDictionary> CreateAnimDataDictionary(std::shared_ptr<DrawRect> drawRect)
+static std::shared_ptr<AnimationDataDictionary> CreateAnimDataDictionary(std::shared_ptr<DrawRect> drawRect, std::shared_ptr<std::vector<int>> animFrameCounts)
 {
 	// Create a shared pointer to a vector of AnimationData
 	std::shared_ptr<std::vector<AnimationData>> animDataVector = std::make_shared<std::vector<AnimationData>>();
 	// Create a shared pointer to the AnimationDataDictionary
 	std::shared_ptr<AnimationDataDictionary> animDataDict = std::make_shared<AnimationDataDictionary>(animDataVector);
+
+	//loop through each animation in the sprite sheet (assuming 1 unique animation per row)
 	for(int i = 0; i < drawRect->imgHeight/drawRect->rectHeight; i++)
 	{
 		std::shared_ptr<std::vector<std::tuple<int, int>>> anim = std::make_shared<std::vector<std::tuple<int, int>>>();
-		//animationDataDictionary.dictionary->at(i).currentFrame = std::make_shared<std::tuple<int, int>>(std::get<0>(animationDataDictionary.dictionary->at(i).animation->at(0)), std::get<1>(animationDataDictionary.dictionary->at(i).animation->at(0)));
+		//loop through each frame in the animation 
 		for(int j = 0; j < drawRect->imgWidth/drawRect->rectWidth; j++)
 		{
-			
+			if(j >= animFrameCounts->at(i))
+				break;
 			anim->push_back(std::make_tuple(i* drawRect->rectHeight, j* drawRect->rectWidth));
 
 		}

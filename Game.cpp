@@ -139,8 +139,21 @@ void Game::Init()
 	//create a draw rect for the sprite
 	drawRect = std::make_shared<DrawRect>(128, 80, 1280, 800);
 
+	// create a debug sprite frame lengths array
+	std::shared_ptr<std::vector<int>> animFrameCounts = std::make_shared<std::vector<int>>();
+	animFrameCounts->push_back(8);
+	animFrameCounts->push_back(8);
+	animFrameCounts->push_back(3);
+	animFrameCounts->push_back(4);
+	animFrameCounts->push_back(2);
+	animFrameCounts->push_back(4);
+	animFrameCounts->push_back(10);
+	animFrameCounts->push_back(8);
+	animFrameCounts->push_back(6);
+	animFrameCounts->push_back(8);
+
 	// Create a sprite
-	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect);
+	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect, animFrameCounts);
 	testSprite->GetTransform().Rotate(-3.141592f/2,0, 0);
 
 	entt::entity skyEntity = registry.create();

@@ -39,6 +39,7 @@ struct AnimationData {
 
 struct AnimationDataDictionary {
 	std::shared_ptr<std::vector<AnimationData>> dictionary;
+	std::shared_ptr<std::vector<int>> animFrameCounts;
 	int currentAnimationIndex;
 	int currentFrameIndex;
 	
@@ -47,7 +48,7 @@ struct AnimationDataDictionary {
 	//AnimationDataDictionary() : currentAnimationIndex(0), currentFrameIndex(0) {}
 };
 
-static std::shared_ptr<AnimationDataDictionary> CreateAnimDataDictionary(std::shared_ptr<DrawRect> drawRect);
+static std::shared_ptr<AnimationDataDictionary> CreateAnimDataDictionary(std::shared_ptr<DrawRect> drawRect, std::shared_ptr<std::vector<int>> animFrameCounts);
 
 class Sprite
 {
@@ -61,7 +62,7 @@ private:
 public:
 
 	int scale;
-	Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material, std::shared_ptr<DrawRect> _drawRect);
+	Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material, std::shared_ptr<DrawRect> _drawRect, std::shared_ptr<std::vector<int>> animFrameCounts);
 	//Sprite() {}
 	~Sprite();
 	std::shared_ptr<Mesh> GetMesh();
