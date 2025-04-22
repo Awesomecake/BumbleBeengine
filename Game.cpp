@@ -159,9 +159,9 @@ void Game::Init()
 	animFrameCounts->push_back(8);
 
 	// Create a sprite
-	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect);
+	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect, animFrameCounts);
 	testSprite->GetTransform().SetRotation(-3.141592 / 2, 0, 0);
-	testSprite->scale = 2;
+	testSprite->scale = 1;
 
 	entt::entity skyEntity = registry.create();
 	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);
