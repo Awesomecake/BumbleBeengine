@@ -1540,6 +1540,9 @@
     <ClInclude Include="UICanvas.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
+    <ClInclude Include="Canvases.h">
+      <Filter>Header Files\UI\Canvas</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

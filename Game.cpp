@@ -86,6 +86,12 @@ void Game::Init()
 	LoadShaders();
 	physicsManager = new PhysicsManager();
 
+	uiManager = new UIManager();
+	uiManager->addCanvas("MainMenu", new TestCanvas());
+	uiManager->OpenCanvas("MainMenu");
+	uiManager->addCanvas("Settings", new TestCanvas());
+	uiManager->OpenCanvas("Settings");
+
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -848,5 +854,7 @@ void Game::BuildUI(float deltaTime, float totalTime)
 	}
 
 	ImGui::End(); // Ends the current window
+
+	uiManager->Render();
 }
 #pragma endregion

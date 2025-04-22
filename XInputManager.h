@@ -19,7 +19,6 @@ using namespace DirectX;
 #define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
 #define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    30
 
-
 using InputActionManager::InputType;
 using InputActionManager::InputBindings;
 
