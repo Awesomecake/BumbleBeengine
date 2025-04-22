@@ -6,9 +6,10 @@ Sprite::Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _materia
 {
 	mesh = refMesh;
 	material = _material;
-
+	scale = 1;
 	//hard coded values for testing rn
 	drawRect = _drawRect;
+	animationDataDictionary = CreateAnimDataDictionary(_drawRect);
 	
 }
 
@@ -34,6 +35,11 @@ std::shared_ptr<Material> Sprite::GetMaterial()
 	return material;
 }
 
+void Sprite::Update(float deltaTime) 
+{
+
+}
+
 void Sprite::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera)
 {
 	material->PrepareMaterial();
@@ -47,7 +53,7 @@ void Sprite::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shar
 	material->pixelShader->SetFloat("imgWidth", drawRect->imgWidth);
 	material->pixelShader->SetFloat("imgHeight", drawRect->imgHeight);
 
-	transform.SetScale(1.0f, 1.0f, drawRect->imgHeight / drawRect->imgWidth);
+	transform.SetScale(scale, 1.0f, drawRect->imgHeight / drawRect->imgWidth * scale);
 
 	material->pixelShader->CopyAllBufferData();
 
@@ -75,4 +81,28 @@ void Sprite::SetDrawRect(float column, float row, float rectW, float rectH, floa
 	drawRect->rectHeight = rectH;
 	drawRect->imgWidth = imgW;
 	drawRect->imgHeight = imgH;
+}
+
+static std::shared_ptr<AnimationDataDictionary> CreateAnimDataDictionary(std::shared_ptr<DrawRect> drawRect)
+{
+	// Create a shared pointer to a vector of AnimationData
+	std::shared_ptr<std::vector<AnimationData>> animDataVector = std::make_shared<std::vector<AnimationData>>();
+	// Create a shared pointer to the AnimationDataDictionary
+	std::shared_ptr<AnimationDataDictionary> animDataDict = std::make_shared<AnimationDataDictionary>(animDataVector);
+	for(int i = 0; i < drawRect->imgHeight/drawRect->rectHeight; i++)
+	{
+		std::shared_ptr<std::vector<std::tuple<int, int>>> anim = std::make_shared<std::vector<std::tuple<int, int>>>();
+		//animationDataDictionary.dictionary->at(i).currentFrame = std::make_shared<std::tuple<int, int>>(std::get<0>(animationDataDictionary.dictionary->at(i).animation->at(0)), std::get<1>(animationDataDictionary.dictionary->at(i).animation->at(0)));
+		for(int j = 0; j < drawRect->imgWidth/drawRect->rectWidth; j++)
+		{
+			
+			anim->push_back(std::make_tuple(i* drawRect->rectHeight, j* drawRect->rectWidth));
+
+		}
+		AnimationData animData = AnimationData(anim, 12);
+		animDataDict->dictionary->push_back(animData);
+	}
+	animDataDict->currentAnimationIndex = 0;
+	animDataDict->currentFrameIndex = 0;
+	return animDataDict;
 }

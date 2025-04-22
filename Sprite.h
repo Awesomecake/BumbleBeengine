@@ -7,6 +7,8 @@
 
 #include <memory>
 
+
+
 struct DrawRect
 {
 	float xOffset;
@@ -27,8 +29,12 @@ struct DrawRect
 struct AnimationData {
 
 	std::shared_ptr<std::vector<std::tuple<int, int>>> animation;
-	std::shared_ptr<std::tuple<int, int>> currentFrame;
+	//std::shared_ptr<std::tuple<int, int>> currentFrame;
 	float frameRate;
+
+	AnimationData(std::shared_ptr<std::vector<std::tuple<int, int>>> anim, float rate)
+		: animation(anim), frameRate(rate) {}
+	
 };
 
 struct AnimationDataDictionary {
@@ -38,8 +44,10 @@ struct AnimationDataDictionary {
 	
 	AnimationDataDictionary(std::shared_ptr<std::vector<AnimationData>> dict)
 		: dictionary(dict), currentAnimationIndex(0), currentFrameIndex(0) {}
-	AnimationDataDictionary() : currentAnimationIndex(0), currentFrameIndex(0) {}
+	//AnimationDataDictionary() : currentAnimationIndex(0), currentFrameIndex(0) {}
 };
+
+static std::shared_ptr<AnimationDataDictionary> CreateAnimDataDictionary(std::shared_ptr<DrawRect> drawRect);
 
 class Sprite
 {
@@ -51,18 +59,20 @@ private:
 
 public:
 
+	int scale;
 	Sprite(std::shared_ptr<Mesh> refMesh, std::shared_ptr<Material> _material, std::shared_ptr<DrawRect> _drawRect);
 	//Sprite() {}
 	~Sprite();
 	std::shared_ptr<Mesh> GetMesh();
 	TransformEuler& GetTransform();
 	std::shared_ptr<Material> GetMaterial();
-	AnimationDataDictionary animationDataDictionary;
+	std::shared_ptr<AnimationDataDictionary> animationDataDictionary;
 
-
+	void Update(float deltaTime);
 	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera);
 	void SetMaterial(std::shared_ptr<Material> newMat);
 	void SetDrawRect(float column, float row, float rectW, float rectH, float imgW, float imgH);
+	//void CreateAnimDataDictionary();
 	
 };
 
