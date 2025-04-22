@@ -86,6 +86,12 @@ void Game::Init()
 	LoadShaders();
 	physicsManager = new PhysicsManager();
 
+	uiManager = new UIManager();
+	uiManager->addCanvas("MainMenu", new TestCanvas());
+	uiManager->OpenCanvas("MainMenu");
+	uiManager->addCanvas("Settings", new TestCanvas());
+	uiManager->OpenCanvas("Settings");
+
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -153,8 +159,9 @@ void Game::Init()
 	animFrameCounts->push_back(8);
 
 	// Create a sprite
-	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect, animFrameCounts);
-	testSprite->GetTransform().Rotate(-3.141592f/2,0, 0);
+	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect);
+	testSprite->GetTransform().SetRotation(-3.141592 / 2, 0, 0);
+	testSprite->scale = 2;
 
 	entt::entity skyEntity = registry.create();
 	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);
@@ -186,7 +193,7 @@ void Game::Init()
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 45.f, XMFLOAT3(0, 0.5, -5)));
 	cameras.push_back(std::make_shared<Camera>((float)this->windowWidth / this->windowHeight, 90.f, XMFLOAT3(0, -0.5, -5)));
 
-	BodyID sphere1 = physicsManager->CreateCubeBody(RVec3(0.1_r, 0.0_r, 0.1_r), Vec3(1,1,1), EMotionType::Dynamic, JPH::EAllowedDOFs::Plane2D);
+	BodyID sphere1 = physicsManager->CreateCubeBody(RVec3(0.1_r, 0.0_r, 0.1_r), Vec3(0.5,0.5,0.1), EMotionType::Dynamic, JPH::EAllowedDOFs::TranslationX | JPH::EAllowedDOFs::TranslationY);
 
 	physicsManager->contact_listener.collisionDelegate = CollisionCallback;
 
@@ -861,5 +868,7 @@ void Game::BuildUI(float deltaTime, float totalTime)
 	}
 
 	ImGui::End(); // Ends the current window
+
+	uiManager->Render();
 }
 #pragma endregion

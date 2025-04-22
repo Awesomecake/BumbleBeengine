@@ -1,9 +1,6 @@
 #ifndef _UICanvas_
 #define _UICanvas_
 
-#include <functional>
-#include <string>
-
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
@@ -15,7 +12,6 @@ class UICanvas
 public:
 	UICanvas();
 	~UICanvas();
-	string name;
 	bool isRendering = false;
 	virtual void Update() = 0;
 	virtual void Render() = 0;

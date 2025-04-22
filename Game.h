@@ -13,6 +13,9 @@
 #include "AudioManager.h"
 #include "Sprite.h"
 
+#include "UIManager.h"
+#include "Canvases.h"
+
 #include "PhysicsManager.h"
 #include "XInputManager.h"
 
@@ -89,6 +92,9 @@ public:
 
 	// Audio
 	std::shared_ptr<AudioManager> audioManager;
+
+	// UI
+	UIManager* uiManager;
 
 private:
 
