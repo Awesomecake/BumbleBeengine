@@ -486,6 +486,10 @@ void Game::Update(float _deltaTime, float totalTime)
 	mouseX = (InputManager::GetMouseX() / (float) windowWidth);
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 	
+
+#pragma region spriteAnimTesting
+	testSprite->Update(_deltaTime);
+#pragma endregion
 #pragma region Physics System
 
 	if (InputManager::KeyPress(VK_INSERT))
