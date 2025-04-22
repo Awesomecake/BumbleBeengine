@@ -141,6 +141,7 @@ void Game::Init()
 
 	// Create a sprite
 	testSprite = std::make_shared<Sprite>(quad, spriteMat, drawRect);
+	testSprite->GetTransform().Rotate(-3.141592f/2,0, 0);
 
 	entt::entity skyEntity = registry.create();
 	registry.emplace<SkyBoxComponent>(skyEntity, cube, samplerState, device, context, true);
@@ -178,8 +179,6 @@ void Game::Init()
 
 	entity2D = registry.create();
 	registry.emplace<TransformComponent>(entity2D, XMFLOAT3(0, 20, 0));
-	registry.emplace<MeshComponent>(entity2D, cube);
-	registry.emplace<MaterialComponent>(entity2D, materials[0]);
 	registry.emplace<PhysicsComponent>(entity2D, sphere1);
 
 	// Serialize the registry to JSON as a test.
@@ -525,6 +524,9 @@ void Game::Update(float _deltaTime, float totalTime)
 		{
 			Systems::UpdateTransformFromPhysicsBody(physicsManager, physics_comp, transform_comp);
 		}
+
+		DirectX::XMFLOAT3 pos = registry.get<TransformComponent>(entity2D).GetPosition();
+		testSprite->GetTransform().SetPosition(pos);
 	}
 
 #pragma endregion
