@@ -1,10 +1,10 @@
 #include "Canvases.h"
-#include <iostream>
+#include <format>
 
 void TestCanvas::Render()
 {
-	ImGui::Begin("Test");
-	ImGui::Text("This is a test canvas.");
+	ImGui::Begin(Name.c_str());
+	Text(std::format("This window has been closed {} times", timesClosed).c_str());
 	ImGui::End();
 }
 
@@ -19,11 +19,13 @@ void TestCanvas::OnOpen()
 
 void TestCanvas::OnClose()
 {
-
+	timesClosed += 1;
 }
 
-TestCanvas::TestCanvas()
+TestCanvas::TestCanvas(std::string name)
+	: UICanvas(name)
 {
+
 }
 
 TestCanvas::~TestCanvas()

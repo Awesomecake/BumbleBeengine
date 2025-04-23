@@ -87,10 +87,9 @@ void Game::Init()
 	physicsManager = new PhysicsManager();
 
 	uiManager = new UIManager();
-	uiManager->addCanvas("MainMenu", new TestCanvas());
-	uiManager->OpenCanvas("MainMenu");
-	uiManager->addCanvas("Settings", new TestCanvas());
-	uiManager->OpenCanvas("Settings");
+	uiManager->addCanvas("MainMenu", new TestCanvas("One"));
+	uiManager->addCanvas("Settings", new Canvas_TopBar("TopBar"));
+	uiManager->addCanvas("Clock", new Canvas_Clock("Clock"));
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -498,6 +497,22 @@ void Game::Update(float _deltaTime, float totalTime)
 	{
 		audioManager->playSound("Sounds/vine-boom.wav");
 	}
+
+	if (InputManager::KeyPress(VK_NUMPAD1))
+		uiManager->CloseCanvas("Settings");
+	if (InputManager::KeyPress(VK_NUMPAD2))
+		uiManager->OpenCanvas("Settings");
+
+	if (InputManager::KeyPress(VK_NUMPAD4))
+		uiManager->CloseCanvas("MainMenu");
+	if (InputManager::KeyPress(VK_NUMPAD5))
+		uiManager->OpenCanvas("MainMenu");
+
+	if (InputManager::KeyPress(VK_NUMPAD7))
+		uiManager->CloseCanvas("Clock");
+	if (InputManager::KeyPress(VK_NUMPAD8))
+		uiManager->OpenCanvas("Clock");
+
 
 	cameras[selectedCamera].get()->Update(_deltaTime);
 	ImGuiUpdate(_deltaTime, totalTime);

@@ -23,6 +23,7 @@ void UIManager::Render()
 {
 	for (auto& canvas : canvasStack)
 	{
+		canvas->Update();
 		canvas->Render();
 	}
 }

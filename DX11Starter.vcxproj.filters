@@ -572,6 +572,12 @@
     <ClCompile Include="TestCanvas.cpp">
       <Filter>Source Files\UI\Canvas</Filter>
     </ClCompile>
+    <ClCompile Include="Canvas_TopBar.cpp">
+      <Filter>Source Files\UI\Canvas</Filter>
+    </ClCompile>
+    <ClCompile Include="Canvas_Clock.cpp">
+      <Filter>Source Files\UI\Canvas</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">

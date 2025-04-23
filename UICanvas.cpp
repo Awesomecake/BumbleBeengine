@@ -1,7 +1,8 @@
 #include "UICanvas.h"
 
-UICanvas::UICanvas()
+UICanvas::UICanvas(std::string name)
 {
+	Name = name;
 }
 
 UICanvas::~UICanvas()
