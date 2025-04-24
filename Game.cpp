@@ -20,6 +20,8 @@
 
 #define Sprite_Assets L"../../Assets/SpriteSheets/"
 
+#define Particle_Assets L"../../Assets/Particles/"
+
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -140,6 +142,8 @@ void Game::Init()
 	std::shared_ptr<Material> spriteMat = CreateSpriteMaterial(Sprite_Assets "scythe_anims-Sheet.png");
 	
 	CreateGeometry();
+
+	CreateParticleResources();
 
 	//create a draw rect for the sprite
 	drawRect = std::make_shared<DrawRect>(128, 80, 1280, 800);
@@ -459,6 +463,105 @@ void Game::CreateGeometry()
 	registry.emplace<MaterialComponent>(entity7, materials[2]);
 }
 
+void Game::CreateParticleResources()
+{
+	//depth state
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, particleDepthState.GetAddressOf());
+
+	//additive blend state
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, particleBlendState.GetAddressOf());
+
+	//particle materials
+	std::shared_ptr<Material> dustPMat = CreateSpriteMaterial(Particle_Assets "circle_05");
+	std::shared_ptr<Material> firePMat = CreateSpriteMaterial(Particle_Assets "fire_01");
+	std::shared_ptr<Material> twirlPMat = CreateSpriteMaterial(Particle_Assets "twirl_02");
+	std::shared_ptr<Material> starPMat = CreateSpriteMaterial(Particle_Assets "star_04");
+
+	//examples
+	emitters.push_back(std::make_shared<Emitter>(
+		1280,								//max particles
+		240,								//particles per second
+		5.0f,								//life time
+		0.1f,								//start size
+		0.1f,								//end size
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),	//start color
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.2f),	//end color
+		XMFLOAT3(0, -1, 0),					//start velocity
+		XMFLOAT3(0.2f, 0.2f, 0.2f),			//velocity variance
+		XMFLOAT3(0.0, 10.0, 0.0),			//emitter position
+		XMFLOAT3(15.0f, 1.0f, 15.0f),		//position variance
+		XMFLOAT4(-2, 2, -2, 2),				//rotation variance
+		XMFLOAT3(0, -1, 0),					//acceleration
+		device,
+		dustPMat));
+
+	emitters.push_back(std::make_shared<Emitter>(
+		160,
+		30,
+		5.0f,
+		0.1f,
+		4.0f,
+		XMFLOAT4(1, 0.1f, 0.1f, 0.7f),
+		XMFLOAT4(1, 0.6f, 0.1f, 0),
+		XMFLOAT3(-2, 2, 0),
+		XMFLOAT3(0.2f, 0.2f, 0.2f),
+		XMFLOAT3(2, 0, 0),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		XMFLOAT4(-2, 2, -2, 2),
+		XMFLOAT3(0, -1, 0),
+		device,
+		firePMat));
+
+	emitters.push_back(std::make_shared<Emitter>(
+		45,
+		20,
+		2.0f,
+		3.0f,
+		2.0f,
+		XMFLOAT4(0.2f, 0.1f, 0.1f, 0.0f),
+		XMFLOAT4(0.2f, 0.7f, 0.1f, 1.0f),
+		XMFLOAT3(0, 0, 0),
+		XMFLOAT3(0, 0, 0),
+		XMFLOAT3(3.5f, 3.5f, 0),
+		XMFLOAT3(0, 0, 0),
+		XMFLOAT4(-5, 5, -5, 5),
+		XMFLOAT3(0, 0, 0),
+		device,
+		twirlPMat));
+
+	emitters.push_back(std::make_shared<Emitter>(
+		250,
+		100,
+		2.0f,
+		2.0f,
+		0.0f,
+		XMFLOAT4(0.1f, 0.2f, 0.5f, 0.0f),
+		XMFLOAT4(0.1f, 0.1f, 0.3f, 3.0f),
+		XMFLOAT3(0, 0, 0),
+		XMFLOAT3(0.1f, 0, 0.1f),
+		XMFLOAT3(-2.5f, -1, 0),
+		XMFLOAT3(1, 0, 1),
+		XMFLOAT4(0, 0, -3, 3),
+		XMFLOAT3(0, -2, 0),
+		device,
+		starPMat));
+}
+
 
 // --------------------------------------------------------
 // Handle resizing to match the new window size.
@@ -520,7 +623,6 @@ void Game::Update(float _deltaTime, float totalTime)
 
 	mouseX = (InputManager::GetMouseX() / (float) windowWidth);
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
-	
 
 #pragma region spriteAnimTesting
 	testSprite->Update(_deltaTime);
@@ -575,6 +677,23 @@ void Game::Update(float _deltaTime, float totalTime)
 	audioManager->update_audio(deltaTime);
 
 #pragma endregion
+
+	//reset delta time so a flurry of particles arent released due to build up
+	static bool firstFrame = true;
+	if (firstFrame)
+	{
+		deltaTime = 0.0f;
+		firstFrame = false;
+	}
+
+	//update emitters
+	if (!firstFrame)
+	{
+		for (auto& e : emitters)
+		{
+			e->Update(deltaTime);
+		}
+	}
 
 }
 
@@ -688,6 +807,21 @@ void Game::RenderScene()
 			Systems::DrawSkyBox(context, cameras[selectedCamera], skyBox_comp);
 		}
 	}
+
+	//set particle state
+	context->OMSetBlendState(particleBlendState.Get(), 0, 0xffffffff);	//additive blending
+	context->OMSetDepthStencilState(particleDepthState.Get(), 0);
+
+	//draw emitters
+	for (auto& e : emitters)
+	{
+		e->Draw(context, cameras[selectedCamera]);
+	}
+
+	//reset states for next frame for particles
+	context->OMSetBlendState(0, 0, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
+	context->RSSetState(0);
 }
 
 #pragma region ImGui

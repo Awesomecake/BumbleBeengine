@@ -23,6 +23,8 @@
 #include "Components.h"
 #include "Systems.h"
 
+#include "Emitter.h"
+
 #include <memory>
 #include <vector>
 
@@ -101,6 +103,7 @@ private:
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
 	void LoadShaders(); 
 	void CreateGeometry();
+	void CreateParticleResources();
 	void InitializeInputActions();
 	std::shared_ptr<Material> CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile);
 	std::shared_ptr<Material> CreateSpriteMaterial(std::wstring albedoFile);
@@ -118,6 +121,18 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> spriteSamplerState;
+
+	//--------------Particles------------------
+
+	//particle shader data
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;
+
+	//loader particle shaders
+	std::shared_ptr<SimpleVertexShader> particleVertexShader;
+	std::shared_ptr<SimplePixelShader> particlePixelShader;
+
+	std::vector<std::shared_ptr<Emitter>> emitters;
 
 	//--------------JoltPhysics----------------
 	PhysicsManager* physicsManager;
