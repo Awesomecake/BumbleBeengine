@@ -17,11 +17,12 @@ struct DrawRect
 	float rectHeight;
 	float imgWidth;
 	float imgHeight;
+	int isFlipped;
 
 	DrawRect(float rectW, float rectH, float imgW, float imgH)
-		: xOffset(0), yOffset(0), rectWidth(rectW), rectHeight(rectH), imgWidth(imgW), imgHeight(imgH) {}
+		: xOffset(0), yOffset(0), rectWidth(rectW), rectHeight(rectH), imgWidth(imgW), imgHeight(imgH), isFlipped(0) {}
 	// Constructor to initialize the struct with default values
-	DrawRect() : xOffset(0), yOffset(0), rectWidth(0), rectHeight(0), imgWidth(0), imgHeight(0) {}
+	DrawRect() : xOffset(0), yOffset(0), rectWidth(0), rectHeight(0), imgWidth(0), imgHeight(0), isFlipped(0) {}
 
 
 };
@@ -56,7 +57,6 @@ private:
 	TransformEuler transform;
 	std::shared_ptr<Mesh> mesh;
 	std::shared_ptr<Material> material;
-	std::shared_ptr<DrawRect> drawRect;
 	float timeElapsed;
 
 public:
@@ -69,6 +69,7 @@ public:
 	TransformEuler& GetTransform();
 	std::shared_ptr<Material> GetMaterial();
 	std::shared_ptr<AnimationDataDictionary> animationDataDictionary;
+	std::shared_ptr<DrawRect> drawRect;
 
 	void Update(float deltaTime);
 	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shared_ptr<Camera> camera);

@@ -48,7 +48,12 @@ void Sprite::Update(float deltaTime)
 			animationDataDictionary->currentFrameIndex = 0;
 		}
 		drawRect->xOffset = std::get<1>(animationDataDictionary->dictionary->at(animationDataDictionary->currentAnimationIndex).animation->at(animationDataDictionary->currentFrameIndex));
-		drawRect->yOffset = std::get<0>(animationDataDictionary->dictionary->at(animationDataDictionary->currentAnimationIndex).animation->at(animationDataDictionary->currentFrameIndex));
+		//drawRect->yOffset = std::get<0>(animationDataDictionary->dictionary->at(animationDataDictionary->currentAnimationIndex).animation->at(animationDataDictionary->currentFrameIndex));
+	}
+	drawRect->yOffset =animationDataDictionary->currentAnimationIndex * drawRect->rectHeight;
+	if(animationDataDictionary->currentAnimationIndex != 0)
+	{
+		//wow
 	}
 }
 
@@ -64,6 +69,7 @@ void Sprite::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, std::shar
 	material->pixelShader->SetFloat("rectHeight", drawRect->rectHeight);
 	material->pixelShader->SetFloat("imgWidth", drawRect->imgWidth);
 	material->pixelShader->SetFloat("imgHeight", drawRect->imgHeight);
+	material->pixelShader->SetInt("isFlipped", drawRect->isFlipped);
 
 	transform.SetScale(scale, 1.0f, drawRect->imgHeight / drawRect->imgWidth * scale);
 

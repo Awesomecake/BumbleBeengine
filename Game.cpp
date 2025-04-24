@@ -377,6 +377,9 @@ void Game::InitializeInputActions()
 				}
 			}
 		});
+
+
+	
 }
 
 std::shared_ptr<Material> Game::CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile)
@@ -644,7 +647,20 @@ void Game::Update(float _deltaTime, float totalTime)
 	mouseY = (InputManager::GetMouseY() / (float)windowHeight);
 
 #pragma region spriteAnimTesting
+	JPH::BodyID bodyid = registry.get<PhysicsComponent>(entity2D).bodyID;
+	JPH::Vec3 velocity = physicsManager->body_interface->GetLinearVelocity(bodyid);
+	if (velocity.GetX() != 0)
+	{
+
+		testSprite->drawRect->isFlipped = velocity.GetX() < 0? 1:0;
+		testSprite->animationDataDictionary->currentAnimationIndex = 1;
+	}
+	else
+	{
+		testSprite->animationDataDictionary->currentAnimationIndex = 0;
+	}
 	testSprite->Update(_deltaTime);
+
 #pragma endregion
 #pragma region Physics System
 
