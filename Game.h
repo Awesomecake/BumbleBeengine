@@ -107,6 +107,7 @@ private:
 	void InitializeInputActions();
 	std::shared_ptr<Material> CreateMaterial(std::wstring albedoFile, std::wstring normalFile, std::wstring roughnessFile, std::wstring metalnessFile);
 	std::shared_ptr<Material> CreateSpriteMaterial(std::wstring albedoFile);
+	std::shared_ptr<Material> CreateParticleMaterial(std::wstring albedoFile);
 
 	std::shared_ptr<SimplePixelShader> pixelShader;
 	std::shared_ptr<SimplePixelShader> ppPS1;

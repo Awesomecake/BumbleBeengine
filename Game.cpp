@@ -251,6 +251,11 @@ void Game::LoadShaders()
 	ppPS3 = std::make_shared<SimplePixelShader>(device, context, FixPath(L"PostProcessPixelizePS.cso").c_str());
 	ppPS4 = std::make_shared<SimplePixelShader>(device, context, FixPath(L"PostProcessChromaticAberrationPS.cso").c_str());
 
+	particleVertexShader = std::make_shared<SimpleVertexShader>(device, context,
+		FixPath(L"particleVertexShader.cso").c_str());
+	particlePixelShader = std::make_shared<SimplePixelShader>(device, context,
+		FixPath(L"particlePixelShader.cso").c_str());
+
 	ppVS = std::make_shared<SimpleVertexShader>(device, context, FixPath(L"FullScreenTriangle.cso").c_str());
 
 	spritePixelShader = std::make_shared<SimplePixelShader>(device, context, FixPath(L"SpritePixelShader.cso").c_str());
@@ -412,6 +417,20 @@ std::shared_ptr<Material> Game::CreateSpriteMaterial(std::wstring albedoFile)
 	return mat;
 }
 
+std::shared_ptr<Material> Game::CreateParticleMaterial(std::wstring albedoFile)
+{
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
+
+	CreateWICTextureFromFile(device.Get(), context.Get(), FixPath(albedoFile).c_str(), nullptr, albedoSRV.GetAddressOf());
+
+	std::shared_ptr<Material> mat = std::make_shared<Material>(XMFLOAT4(1, 1, 1, 1), particlePixelShader, particleVertexShader);
+	mat->textureSRVs.insert({ "Albedo", albedoSRV });
+	mat->samplers.insert({ "BasicSampler",spriteSamplerState });
+	mat->PrepareMaterial();
+
+	return mat;
+}
+
 
 // --------------------------------------------------------
 // Creates the geometry we're going to draw - a single triangle for now
@@ -487,10 +506,10 @@ void Game::CreateParticleResources()
 	device->CreateBlendState(&blend, particleBlendState.GetAddressOf());
 
 	//particle materials
-	std::shared_ptr<Material> dustPMat = CreateSpriteMaterial(Particle_Assets "circle_05");
-	std::shared_ptr<Material> firePMat = CreateSpriteMaterial(Particle_Assets "fire_01");
-	std::shared_ptr<Material> twirlPMat = CreateSpriteMaterial(Particle_Assets "twirl_02");
-	std::shared_ptr<Material> starPMat = CreateSpriteMaterial(Particle_Assets "star_04");
+	std::shared_ptr<Material> dustPMat = CreateParticleMaterial(Particle_Assets "circle_05");
+	std::shared_ptr<Material> firePMat = CreateParticleMaterial(Particle_Assets "fire_01");
+	std::shared_ptr<Material> twirlPMat = CreateParticleMaterial(Particle_Assets "twirl_02");
+	std::shared_ptr<Material> starPMat = CreateParticleMaterial(Particle_Assets "star_04");
 
 	//examples
 	emitters.push_back(std::make_shared<Emitter>(
